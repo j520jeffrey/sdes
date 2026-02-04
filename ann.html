@@ -6,8 +6,7 @@
     <title>學校公告組件</title>
     <style>
         :root {
-            /* 若您網頁背景是深色，請改這裡，預設透明 */
-            --bg-color: transparent; 
+            var(--bg-color: transparent); 
             --text-color: #222222;
             --link-color: #0044cc;
             --focus-outline: 0.25rem solid #ffcc00;
@@ -21,34 +20,47 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             line-height: 1.5;
-            margin: 0; /* 移除邊距，適合嵌入 */
+            margin: 0;
             padding: 0;
-            font-size: 1rem; /* 字體稍微縮小一點以適應嵌入框 */
+            font-size: 1rem;
         }
 
         .container {
-            width: 100%; /* 全寬 */
+            width: 100%;
             max-width: 100%; 
             margin: 0;
-            padding: 0 5px; /* 左右留一點點緩衝 */
+            padding: 0 5px;
             box-sizing: border-box;
         }
 
-        /* 移除 header 樣式 */
+        /* --- 圖示樣式 --- */
+        .icon-top {
+            height: 1.3em; /* 調整大小 */
+            vertical-align: middle;
+            margin-right: 4px;
+            position: relative;
+            top: -2px; /* 微調位置 */
+        }
 
-        /* --- 分類篩選按鈕區 --- */
+        .icon-new {
+            height: 1.1em; /* 調整大小 */
+            vertical-align: middle;
+            margin-left: 6px;
+        }
+
+        /* --- 分類篩選 --- */
         .filter-section {
             display: flex;
             flex-wrap: wrap;
             gap: 0.4rem;
             margin-bottom: 1rem;
-            padding: 0.5rem 0; /* 減少留白 */
-            border-bottom: 1px solid #ddd; /* 改用底線區隔 */
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #ddd;
         }
 
         .filter-btn {
             background-color: #fff;
-            border: 1px solid #0044cc; /* 邊框變細 */
+            border: 1px solid #0044cc;
             color: #0044cc;
             padding: 0.3rem 0.7rem;
             font-size: 0.95rem;
@@ -57,41 +69,21 @@
             transition: all 0.2s;
         }
 
-        .filter-btn:hover {
-            background-color: #e6f0ff;
-        }
-
-        .filter-btn.active {
-            background-color: var(--btn-active-bg);
-            color: var(--btn-active-text);
-        }
-
-        .filter-btn:focus {
-            outline: var(--focus-outline);
-        }
+        .filter-btn:hover { background-color: #e6f0ff; }
+        .filter-btn.active { background-color: var(--btn-active-bg); color: var(--btn-active-text); }
+        .filter-btn:focus { outline: var(--focus-outline); }
         
         .count-badge {
-            background-color: #eee;
-            color: #333;
-            font-size: 0.8em;
-            padding: 1px 5px;
-            border-radius: 10px;
-            margin-left: 4px;
+            background-color: #eee; color: #333; font-size: 0.8em;
+            padding: 1px 5px; border-radius: 10px; margin-left: 4px;
         }
-        .filter-btn.active .count-badge {
-            background-color: rgba(255,255,255,0.3);
-            color: #fff;
-        }
+        .filter-btn.active .count-badge { background-color: rgba(255,255,255,0.3); color: #fff; }
 
         /* --- 列表樣式 --- */
-        .announcement-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
+        .announcement-list { list-style: none; padding: 0; margin: 0; }
 
         .list-item {
-            border-bottom: 1px solid #eee; /* 線條變淡 */
+            border-bottom: 1px solid #eee;
             padding: 0.8rem 0.5rem;
             display: flex;
             align-items: center;
@@ -101,69 +93,43 @@
         .list-item:hover { background-color: rgba(0,0,0,0.03); }
 
         .list-date {
-            font-family: monospace;
-            font-size: 0.95rem;
-            color: #555;
-            flex-shrink: 0;
-            width: 11ch; 
+            font-family: monospace; font-size: 0.95rem; color: #555;
+            flex-shrink: 0; width: 11ch; 
         }
 
         .list-dept {
-            background-color: #eee;
-            padding: 0.2rem 0.4rem;
-            border-radius: 0.2rem;
-            font-size: 0.85rem;
-            color: #333;
-            flex-shrink: 0;
-            width: 7.5em; 
-            text-align: center;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            background-color: #eee; padding: 0.2rem 0.4rem; border-radius: 0.2rem;
+            font-size: 0.85rem; color: #333; flex-shrink: 0; width: 7.5em; 
+            text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
 
         .list-title { flex-grow: 1; }
 
         .title-btn {
-            background: none;
-            border: none;
-            padding: 0;
-            font-size: 1.05rem;
-            color: var(--link-color);
-            text-decoration: none; /* 預設不底線，比較清爽 */
-            cursor: pointer;
-            text-align: left;
-            font-weight: bold;
-            font-family: inherit;
+            background: none; border: none; padding: 0; font-size: 1.05rem;
+            color: var(--link-color); text-decoration: none; cursor: pointer;
+            text-align: left; font-weight: bold; font-family: inherit;
+            line-height: 1.6;
         }
 
         .title-btn:hover { color: #002266; text-decoration: underline; }
         .title-btn:focus { outline: var(--focus-outline); background-color: #000; color: #ffcc00; }
 
-        /* --- 分頁與Modal樣式 --- */
+        /* --- 分頁與Modal --- */
         .pagination {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 1rem;
-            margin-top: 1.5rem;
-            margin-bottom: 1rem;
+            display: flex; justify-content: center; align-items: center;
+            gap: 1rem; margin-top: 1.5rem; margin-bottom: 1rem;
         }
         .page-btn {
-            padding: 0.4rem 1rem;
-            font-size: 0.9rem;
-            cursor: pointer;
-            background-color: #fff;
-            border: 1px solid #999;
-            border-radius: 4px;
+            padding: 0.4rem 1rem; font-size: 0.9rem; cursor: pointer;
+            background-color: #fff; border: 1px solid #999; border-radius: 4px;
         }
         .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* Modal 保持不變，因為它是全螢幕蓋板 */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--modal-overlay); display: none;
-            justify-content: center; align-items: center; z-index: 9999; /* 層級拉高 */
+            justify-content: center; align-items: center; z-index: 9999;
         }
         .modal-content {
             background: #fff; width: 90%; max-width: 70ch; max-height: 90vh;
@@ -180,13 +146,7 @@
         .attachments-area { background: #f4f4f4; padding: 1rem; border: 1px dashed #666; margin-top: 1rem; }
         .attachments-area a { color: var(--link-color); font-weight: bold; display: inline-block; padding: 0.3rem; }
 
-        /* 載入中文字樣式 */
-        #loading {
-            font-size: 0.9rem; 
-            color: #666; 
-            padding: 1rem;
-            text-align: center;
-        }
+        #loading { font-size: 0.9rem; color: #666; padding: 1rem; text-align: center; }
 
         @media (max-width: 600px) {
             .list-item { flex-direction: column; align-items: flex-start; gap: 0.3rem; }
@@ -200,17 +160,11 @@
 <body>
 
 <div class="container">
-    
-    <div id="loading">
-        ↻ 資料載入中...
-    </div>
-
+    <div id="loading">↻ 資料載入中...</div>
     <nav class="filter-section" aria-label="公告分類篩選">
         <button class="filter-btn active" data-cat="all">全部公告</button>
     </nav>
-
     <ul id="announcement-list" class="announcement-list" aria-live="polite"></ul>
-
     <div class="pagination" id="pagination-controls" style="display:none;">
         <button id="prev-btn" class="page-btn">← 上一頁</button>
         <span id="page-info" style="font-weight:bold; font-size: 0.9rem;">1 / 1</span>
@@ -236,26 +190,19 @@
 </div>
 
 <script>
-    // --- GAS 網址 (沿用您原本的) ---
-    const DATA_URL = "https://script.google.com/macros/s/AKfycbzjiOhi8Qq7_3b_tLsqTks_c5S3IRj_P-FXPSbarURehobwcpQDWBBUYfamsUZtkrsT/exec";
-    
+    const DATA_URL = "https://script.google.com/macros/s/AKfycbwYL8U7s2Q-xNH5rkiN6XUrAs2NxA1ymKiOwDu-syHUpZgle2DZDL46GFLxHyFnKK13/exec";
     const ITEMS_PER_PAGE = 15;
+    const NEW_DAYS_LIMIT = 7; // 設定 7 天內為最新公告
+
+    // 圖示網址
+    const ICON_TOP_URL = "https://esa.ntpc.edu.tw/web-announce/images/top.png";
+    const ICON_NEW_URL = "https://esa.ntpc.edu.tw/web-announce/images/news.svg";
     
     const CATEGORY_MAP = {
-        "2": "行政公告",
-        "35": "補助及獎助學金",
-        "36": "人事室公告",
-        "30": "會計室公告",
-        "31": "家長專區",
-        "38": "性別平等",
-        "28": "人權二公約",
-        "37": "校內公告",
-        "48": "人員甄選",
-        "39": "幼兒園",
-        "29": "體育賽事、活動",
-        "156": "新生報到專區",
-        "168": "安全棒球",
-        "7": "研習公告"
+        "2": "行政公告", "35": "補助及獎助學金", "36": "人事室公告", "30": "會計室公告",
+        "31": "家長專區", "38": "性別平等", "28": "人權二公約", "37": "校內公告",
+        "48": "人員甄選", "39": "幼兒園", "29": "體育賽事、活動", "156": "新生報到專區",
+        "168": "安全棒球", "7": "研習公告"
     };
 
     let allData = [];
@@ -272,6 +219,7 @@
     const nextBtn = document.getElementById('next-btn');
     const filterSection = document.querySelector('.filter-section');
     
+    // Modal
     const modal = document.getElementById('detail-modal');
     const modalTitle = document.getElementById('modal-title');
     const modalDate = document.getElementById('modal-date');
@@ -281,21 +229,38 @@
     const attachmentList = document.getElementById('attachment-list');
     const closeBtn = document.getElementById('modal-close-btn');
 
-    // 1. 初始化
+    // 檢查是否為最新公告
+    function checkIsNew(dateStr) {
+        if (!dateStr) return false;
+        // 格式 115.02.04 -> 轉成 2026/02/04
+        const parts = dateStr.split(' ')[0].split('.'); // 取出日期部分
+        if (parts.length !== 3) return false;
+        
+        const year = parseInt(parts[0]) + 1911;
+        const month = parseInt(parts[1]) - 1; // JS 月份是 0-11
+        const day = parseInt(parts[2]);
+        
+        const postDate = new Date(year, month, day);
+        const today = new Date();
+        
+        // 計算差距天數
+        const diffTime = Math.abs(today - postDate);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+
+        return diffDays <= NEW_DAYS_LIMIT;
+    }
+
     fetch(DATA_URL)
         .then(res => res.json())
         .then(json => {
             if (json.status !== "success") throw new Error("GAS Error");
-            
             loadingDiv.style.display = 'none';
             if (!json.data || json.data.length === 0) {
                 listContainer.innerHTML = "<li style='padding:10px; color:#666;'>目前沒有公告。</li>";
                 return;
             }
-
             allData = json.data;
             filteredData = allData; 
-            
             initFilters();
             initPagination();
             renderPage(1);
@@ -315,18 +280,15 @@
         Object.keys(CATEGORY_MAP).forEach(catId => {
             const name = CATEGORY_MAP[catId];
             const count = counts[catId] || 0;
-            
             const btn = document.createElement('button');
             btn.className = 'filter-btn';
             btn.dataset.cat = catId;
             btn.innerHTML = `${name} <span class="count-badge">${count}</span>`;
-            
             btn.addEventListener('click', () => {
                 applyFilter(catId);
                 document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
             });
-
             filterSection.appendChild(btn);
         });
 
@@ -385,12 +347,25 @@
             const simpleDate = item.date ? item.date.split(' ')[0] : '-';
             const catName = CATEGORY_MAP[item.category_id] || item.department;
 
+            // ★ 邏輯判斷區
+            // 1. 置頂圖示：判斷 is_top (來自 GAS)
+            let topHtml = "";
+            if (item.is_top == 1) {
+                topHtml = `<img src="${ICON_TOP_URL}" class="icon-top" alt="置頂">`;
+            }
+
+            // 2. 最新圖示：判斷日期 (7天內)
+            let newHtml = "";
+            if (checkIsNew(item.date)) {
+                newHtml = `<img src="${ICON_NEW_URL}" class="icon-new" alt="New">`;
+            }
+
             li.innerHTML = `
                 <div class="list-date" aria-label="日期">${simpleDate}</div>
                 <div class="list-dept" aria-label="分類">${catName}</div>
                 <div class="list-title">
                     <button class="title-btn" onclick="openDetails(${start + index})" aria-label="查看：${item.title}">
-                        ${item.title}
+                        ${topHtml}${item.title}${newHtml}
                     </button>
                 </div>
             `;
@@ -401,12 +376,10 @@
     window.openDetails = function(index) {
         const item = filteredData[index];
         lastFocusedElement = document.activeElement;
-
         modalTitle.textContent = item.title;
         modalDate.textContent = "發布日期：" + item.date;
         modalDept.textContent = "發布單位：" + item.department;
         modalBody.innerHTML = item.content_html;
-
         if (item.attachments && item.attachments.length > 0) {
             modalAttachments.style.display = 'block';
             attachmentList.innerHTML = item.attachments.map(f => `
@@ -415,7 +388,6 @@
         } else {
             modalAttachments.style.display = 'none';
         }
-
         modal.style.display = 'flex';
         closeBtn.focus();
         document.body.style.overflow = 'hidden';
