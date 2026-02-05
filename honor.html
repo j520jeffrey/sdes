@@ -196,7 +196,6 @@
         .modal-content {
             background: #fff; 
             width: 95%; 
-            /* ★ 修正 CS3140801C：將 max-width: 900px 改為 60rem (相對單位) */
             max-width: 60rem; 
             max-height: 90vh;
             overflow-y: auto; padding: 2rem; border-radius: 4px; position: relative;
@@ -232,18 +231,33 @@
         }
         .modal-body-text {
             font-size: 1.1rem; line-height: 1.8; color: #333; white-space: pre-wrap; margin-bottom: 30px;
-            /* 針對內容寬度的額外優化，避免單行文字過長 */
             max-width: 100%;
         }
 
+        /* ★ 修改：照片區塊樣式優化 */
         .modal-photos-section { margin-top: 20px; }
         .photo-list { 
             list-style: none; padding: 0; margin: 15px 0 0 0; 
             display: flex; flex-wrap: wrap; gap: 15px;
         }
+        .photo-item {
+            display: block;
+        }
+        /* 縮圖變小，設定高度為 150px，並加上邊框與 Hover 效果 */
         .photo-item img {
-            max-width: 100%; height: auto; border: 1px solid #ddd; padding: 3px;
-            max-height: 400px; object-fit: contain;
+            height: 150px; 
+            width: auto; 
+            max-width: 100%;
+            border: 1px solid #ddd; 
+            padding: 3px;
+            object-fit: contain;
+            transition: transform 0.2s, border-color 0.2s;
+            background: #fff;
+        }
+        .photo-item img:hover {
+            transform: scale(1.05); /* 滑鼠移過去稍微放大 */
+            border-color: var(--link-color);
+            cursor: pointer;
         }
 
         @media (max-width: 768px) {
@@ -415,6 +429,7 @@
         }
     }
 
+    // ★ 修改：照片渲染邏輯，加入連結與下載設定
     window.openDetails = function(index) {
         const item = allData[index];
         lastFocusedElement = document.activeElement;
@@ -431,7 +446,9 @@
             modalPhotos.style.display = 'block';
             photoList.innerHTML = item.images.map(img => `
                 <li class="photo-item">
-                    <img src="${img.url}" alt="競賽照片：${item.title}" title="競賽照片">
+                    <a href="${img.url}" target="_blank" download title="下載原圖：${item.title}">
+                        <img src="${img.url}" alt="競賽照片：${item.title}">
+                    </a>
                 </li>
             `).join('');
         } else {
