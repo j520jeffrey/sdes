@@ -14,7 +14,7 @@
             --border-color: #eee;
         }
 
-        /* 全域 Box Sizing，防止 Padding 撐大元素 */
+        /* 全域 Box Sizing */
         *, *::before, *::after {
             box-sizing: border-box;
         }
@@ -144,7 +144,7 @@
         }
 
         .page-btn {
-            padding: 8px 14px;
+            padding: 8px 12px;
             border: 1px solid #ddd;
             background: #fff;
             color: var(--link-color);
@@ -152,6 +152,7 @@
             text-decoration: none;
             font-size: 0.95rem;
             border-radius: 4px;
+            min-width: 35px; /* 確保按鈕不會太窄 */
         }
 
         .page-btn:hover { background-color: #eee; }
@@ -162,34 +163,11 @@
 
         /* RWD 設定 */
         @media (max-width: 768px) {
-            .honor-item {
-                flex-direction: column; 
-            }
-
-            .honor-img-box {
-                width: 100%;
-                height: auto;
-                max-height: 250px;
-                margin-bottom: 10px;
-            }
-
-            .honor-thumb {
-                height: auto;
-                max-height: 250px;
-                object-position: center top;
-            }
-
-            .honor-meta {
-                text-align: left;
-                justify-content: flex-start;
-                margin-top: 15px;
-                padding-top: 10px;
-                border-top: 1px dashed #eee;
-            }
-            
-            h2.honor-title {
-                font-size: 1.1rem;
-            }
+            .honor-item { flex-direction: column; }
+            .honor-img-box { width: 100%; height: auto; max-height: 250px; margin-bottom: 10px; }
+            .honor-thumb { height: auto; max-height: 250px; object-position: center top; }
+            .honor-meta { text-align: left; justify-content: flex-start; margin-top: 15px; padding-top: 10px; border-top: 1px dashed #eee; }
+            h2.honor-title { font-size: 1.1rem; }
         }
     </style>
 </head>
@@ -253,8 +231,6 @@
             const dateStr = d ? `${d.substring(0,4)}-${d.substring(4,6)}-${d.substring(6,8)}` : '';
             const docNo = item.doc_no ? `文號: ${item.doc_no}` : '';
             
-            // ★ 修改：移除 clicks 變數和顯示邏輯
-            
             let imgHtml = '';
             if (item.images && item.images.length > 0) {
                 imgHtml = `
@@ -285,7 +261,7 @@
                         <span class="meta-tag">${docNo}</span>
                         <span class="meta-tag">${item.dept}</span>
                         <span class="meta-tag">${dateStr}</span>
-                        </div>
+                    </div>
                 </div>
             `;
             listContainer.appendChild(li);
@@ -305,21 +281,43 @@
         }
     }
 
+    // ★ 修改後的分頁邏輯：支援每 10 頁一組 ★
     function renderPagination() {
         paginationDiv.innerHTML = "";
         const totalPages = Math.ceil(allData.length / ITEMS_PER_PAGE);
         
         if (totalPages <= 1) return;
 
+        // 計算目前所在的頁碼組 (1-10 為第一組，11-20 為第二組...)
+        const pagesPerGroup = 10;
+        const currentGroup = Math.ceil(currentPage / pagesPerGroup);
+        const startPage = (currentGroup - 1) * pagesPerGroup + 1;
+        const endPage = Math.min(startPage + pagesPerGroup - 1, totalPages);
+
+        // --- << 上10頁 ---
+        if (startPage > 1) {
+             const prevGroupBtn = document.createElement('button');
+             prevGroupBtn.className = 'page-btn';
+             prevGroupBtn.innerText = "<<"; 
+             prevGroupBtn.title = "上10頁";
+             prevGroupBtn.setAttribute('aria-label', '上10頁');
+             // 點擊後跳到上一組的最後一頁
+             prevGroupBtn.onclick = () => renderPage(startPage - 1); 
+             paginationDiv.appendChild(prevGroupBtn);
+        }
+
+        // --- < 上一頁 ---
         const prevBtn = document.createElement('button');
         prevBtn.className = 'page-btn';
         prevBtn.innerText = "<";
+        prevBtn.title = "上一頁";
         prevBtn.disabled = currentPage === 1;
         prevBtn.setAttribute('aria-label', '上一頁');
         prevBtn.onclick = () => renderPage(currentPage - 1);
         paginationDiv.appendChild(prevBtn);
 
-        for (let i = 1; i <= totalPages; i++) {
+        // --- 數字頁碼 (只顯示目前的 10 頁) ---
+        for (let i = startPage; i <= endPage; i++) {
             const btn = document.createElement('button');
             btn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
             btn.innerText = i;
@@ -329,13 +327,27 @@
             paginationDiv.appendChild(btn);
         }
 
+        // --- > 下一頁 ---
         const nextBtn = document.createElement('button');
         nextBtn.className = 'page-btn';
         nextBtn.innerText = ">";
+        nextBtn.title = "下一頁";
         nextBtn.disabled = currentPage === totalPages;
         nextBtn.setAttribute('aria-label', '下一頁');
         nextBtn.onclick = () => renderPage(currentPage + 1);
         paginationDiv.appendChild(nextBtn);
+
+        // --- >> 下10頁 ---
+        if (endPage < totalPages) {
+             const nextGroupBtn = document.createElement('button');
+             nextGroupBtn.className = 'page-btn';
+             nextGroupBtn.innerText = ">>"; 
+             nextGroupBtn.title = "下10頁";
+             nextGroupBtn.setAttribute('aria-label', '下10頁');
+             // 點擊後跳到下一組的第一頁
+             nextGroupBtn.onclick = () => renderPage(endPage + 1); 
+             paginationDiv.appendChild(nextGroupBtn);
+        }
     }
 </script>
 
