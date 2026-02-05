@@ -14,18 +14,32 @@
             --border-color: #eee;
         }
 
+        /* ★ 全域設定：這是解決寬度問題的關鍵，確保 Padding 不會撐大寬度 */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
         body {
             font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
             padding: 10px;
+            width: 100%; /* 確保 body 不超過視窗 */
+            overflow-x: hidden; /* 防止橫向捲軸 */
+        }
+
+        /* 無障礙隱藏 */
+        .sr-only {
+            position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+            overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
         }
 
         .honor-list {
             list-style: none;
             padding: 0;
             margin: 0;
+            width: 100%;
         }
 
         .honor-item {
@@ -33,11 +47,13 @@
             gap: 20px;
             padding: 20px 0;
             border-bottom: 1px solid var(--border-color);
+            width: 100%;
         }
 
+        /* 左側圖片區 */
         .honor-img-box {
             flex-shrink: 0;
-            width: 240px;
+            width: 240px; /* 電腦版固定寬度 */
             height: 160px;
         }
 
@@ -48,20 +64,25 @@
             border: 1px solid #ddd;
             padding: 3px;
             background: #fff;
+            display: block; /* 消除圖片底部空隙 */
         }
 
+        /* 右側內容區 */
         .honor-content-box {
             flex-grow: 1;
             display: flex;
             flex-direction: column;
+            min-width: 0; /* ★ 關鍵：防止 Flex 子元素被長文字撐開 */
         }
 
-        .honor-title {
-            font-size: 1.1rem;
+        h2.honor-title {
+            font-size: 1.15rem;
             font-weight: bold;
             color: var(--title-color);
-            margin-bottom: 10px;
+            margin: 0 0 10px 0;
             line-height: 1.5;
+            /* 防止標題太長撐開 */
+            word-wrap: break-word; 
         }
 
         .honor-desc {
@@ -70,6 +91,9 @@
             line-height: 1.6;
             margin-bottom: 10px;
             white-space: pre-wrap;
+            /* ★ 防止內容有長網址撐爆手機版 */
+            word-break: break-word; 
+            overflow-wrap: break-word;
         }
 
         .desc-truncated {
@@ -86,6 +110,11 @@
             text-decoration: none;
             display: inline-block;
             margin-bottom: 10px;
+            background: none;
+            border: none;
+            padding: 0;
+            font-family: inherit;
+            text-align: left;
         }
         .show-more-btn:hover { text-decoration: underline; }
 
@@ -94,64 +123,89 @@
             text-align: right;
             font-size: 0.85rem;
             color: var(--meta-color);
+            display: flex;
+            flex-wrap: wrap; /* 允許 Meta 資訊換行 */
+            justify-content: flex-end;
+            gap: 10px;
         }
 
-        .meta-tag {
-            margin-left: 10px;
-        }
-
+        /* 分頁 */
         .pagination {
             display: flex;
             justify-content: center;
             gap: 5px;
             margin-top: 30px;
             margin-bottom: 20px;
+            flex-wrap: wrap; /* 手機版頁碼太多時可換行 */
         }
 
         .page-btn {
-            padding: 6px 12px;
+            padding: 8px 14px; /* 加大點擊區域，對手機友善 */
             border: 1px solid #ddd;
             background: #fff;
             color: var(--link-color);
             cursor: pointer;
             text-decoration: none;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             border-radius: 4px;
         }
 
         .page-btn:hover { background-color: #eee; }
-        
-        .page-btn.active {
-            background-color: var(--link-color);
-            color: #fff;
-            border-color: var(--link-color);
-        }
-
-        .page-btn:disabled {
-            color: #ccc;
-            cursor: not-allowed;
-        }
+        .page-btn.active { background-color: var(--link-color); color: #fff; border-color: var(--link-color); }
+        .page-btn:disabled { color: #ccc; cursor: not-allowed; }
 
         #loading { text-align: center; color: #666; padding: 20px; }
 
-        @media (max-width: 600px) {
-            .honor-item { flex-direction: column; }
-            .honor-img-box { width: 100%; height: auto; max-height: 250px; }
-            .honor-meta { text-align: left; margin-top: 10px; }
+        /* ★ 手機版/平板版 RWD 設定 (768px 以下) ★ */
+        @media (max-width: 768px) {
+            .honor-item {
+                flex-direction: column; /* 改為上下排列 */
+            }
+
+            .honor-img-box {
+                width: 100%; /* 圖片寬度填滿 */
+                height: auto;
+                max-height: 250px; /* 限制最大高度 */
+                margin-bottom: 10px;
+            }
+
+            .honor-thumb {
+                height: auto;
+                max-height: 250px;
+                object-position: center top;
+            }
+
+            .honor-meta {
+                text-align: left;
+                justify-content: flex-start; /* 靠左對齊 */
+                margin-top: 15px;
+                padding-top: 10px;
+                border-top: 1px dashed #eee;
+            }
+            
+            h2.honor-title {
+                font-size: 1.1rem; /* 手機標題稍微調小 */
+            }
         }
     </style>
 </head>
 <body>
 
-    <div id="loading">↻ 榮譽榜載入中...</div>
-    <ul id="honor-list" class="honor-list"></ul>
-    <div id="pagination" class="pagination"></div>
+    <h1 class="sr-only">學校榮譽榜列表</h1>
+
+    <div id="loading" role="status">↻ 榮譽榜載入中...</div>
+    
+    <nav aria-label="榮譽榜列表">
+        <ul id="honor-list" class="honor-list"></ul>
+    </nav>
+
+    <nav aria-label="分頁導航">
+        <div id="pagination" class="pagination"></div>
+    </nav>
 
 <script>
-    // ★ 請換成您最新的 GAS 網址 ★
+    // ★ 請確認此處為您的 GAS 網址 ★
     const DATA_URL = "https://script.google.com/macros/s/AKfycbwc90f8hJZpOQYTKV3ZAOnSGnQWzAE2RzKfIF3N616zlsEu3UwFLM5Fw7_A2cRW1j_C/exec"; 
-    
-    // ★ 修改處：這裡改成 3 ★
     const ITEMS_PER_PAGE = 3; 
 
     let allData = [];
@@ -198,8 +252,8 @@
             if (item.images && item.images.length > 0) {
                 imgHtml = `
                     <div class="honor-img-box">
-                        <a href="${item.images[0].url}" target="_blank">
-                            <img src="${item.images[0].url}" class="honor-thumb" alt="縮圖">
+                        <a href="${item.images[0].url}" target="_blank" aria-label="查看圖片：${item.title}">
+                            <img src="${item.images[0].url}" class="honor-thumb" alt="活動照片">
                         </a>
                     </div>`;
             } else {
@@ -212,12 +266,12 @@
             const contentId = `desc-${item.id}`;
             const btnId = `btn-${item.id}`;
             let descHtml = `<div id="${contentId}" class="honor-desc desc-truncated">${item.content}</div>`;
-            let moreBtnHtml = `<a href="javascript:void(0)" id="${btnId}" class="show-more-btn" onclick="toggleMore('${contentId}', '${btnId}')">顯示更多內容...</a>`;
+            let moreBtnHtml = `<button id="${btnId}" class="show-more-btn" onclick="toggleMore('${contentId}', '${btnId}')" aria-expanded="false" aria-controls="${contentId}">顯示更多內容...</button>`;
 
             li.innerHTML = `
                 ${imgHtml}
                 <div class="honor-content-box">
-                    <div class="honor-title">${item.title}</div>
+                    <h2 class="honor-title">${item.title}</h2>
                     ${descHtml}
                     ${moreBtnHtml}
                     <div class="honor-meta">
@@ -241,6 +295,7 @@
         if (content.classList.contains('desc-truncated')) {
             content.classList.remove('desc-truncated');
             btn.style.display = 'none';
+            btn.setAttribute('aria-expanded', 'true');
         }
     }
 
@@ -254,6 +309,7 @@
         prevBtn.className = 'page-btn';
         prevBtn.innerText = "<";
         prevBtn.disabled = currentPage === 1;
+        prevBtn.setAttribute('aria-label', '上一頁');
         prevBtn.onclick = () => renderPage(currentPage - 1);
         paginationDiv.appendChild(prevBtn);
 
@@ -261,6 +317,8 @@
             const btn = document.createElement('button');
             btn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
             btn.innerText = i;
+            btn.setAttribute('aria-label', `第 ${i} 頁`);
+            if(i === currentPage) btn.setAttribute('aria-current', 'page');
             btn.onclick = () => renderPage(i);
             paginationDiv.appendChild(btn);
         }
@@ -269,6 +327,7 @@
         nextBtn.className = 'page-btn';
         nextBtn.innerText = ">";
         nextBtn.disabled = currentPage === totalPages;
+        nextBtn.setAttribute('aria-label', '下一頁');
         nextBtn.onclick = () => renderPage(currentPage + 1);
         paginationDiv.appendChild(nextBtn);
     }
