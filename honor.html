@@ -26,15 +26,15 @@
             /* 字體設定 */
             --main-font: "Iansui", "Microsoft JhengHei", "Heiti TC", sans-serif;
 
-            /* 分類標籤顏色 (參照您的截圖配色) */
-            --cat-all-bg: #3498db;      /* 藍色 */
-            --cat-intl-bg: #8bc34a;     /* 淺綠 */
-            --cat-nat-bg: #2ecc71;      /* 綠色 */
-            --cat-city-bg: #f39c12;     /* 橘色 */
-            --cat-dist-bg: #4fc3f7;     /* 天藍 */
-            --cat-school-bg: #9b59b6;   /* 紫色 */
-            --cat-grade-bg: #e91e63;    /* 桃紅 */
-            --cat-private-bg: #81c784;  /* 草綠 */
+            /* 分類標籤顏色 */
+            --cat-all-bg: #3498db;      
+            --cat-intl-bg: #8bc34a;     
+            --cat-nat-bg: #2ecc71;      
+            --cat-city-bg: #f39c12;     
+            --cat-dist-bg: #4fc3f7;     
+            --cat-school-bg: #9b59b6;   
+            --cat-grade-bg: #e91e63;    
+            --cat-private-bg: #81c784;  
         }
 
         /* 全域 Box Sizing */
@@ -104,11 +104,21 @@
             width: 100%;
         }
 
-        /* 左側圖片區 */
+        /* 左側圖片區 (電腦版) */
         .honor-img-box {
             flex-shrink: 0;
             width: 240px; 
             height: 160px;
+            position: relative; /* 為了讓內部絕對定位生效 */
+        }
+
+        /* 讓按鈕填滿容器 */
+        .honor-img-box button.title-btn {
+            width: 100% !important;
+            height: 100% !important;
+            display: block;
+            padding: 0;
+            border: none;
         }
 
         .honor-thumb {
@@ -291,23 +301,26 @@
             cursor: pointer;
         }
 
-        /* ★★★ RWD 設定修正 (修復 iPad 比例問題) ★★★ */
+        /* ★★★ RWD 設定修正 (修復 iPad/手機 比例問題) ★★★ */
         @media (max-width: 768px) {
             .honor-item { flex-direction: column; }
             
             .honor-img-box {
                 width: 100%; 
-                /* ★ 關鍵修正：給定一個固定高度，讓圖片有空間顯示 */
-                height: 220px; 
+                height: auto; /* 高度自動，由 aspect-ratio 控制 */
+                /* ★ 關鍵：使用 aspect-ratio 固定比例，iPad 上就不會變形 */
+                aspect-ratio: 4 / 3; 
                 margin-bottom: 10px; 
             }
             
-            .honor-thumb { 
+            /* 確保按鈕和圖片都填滿這個 4:3 的框框 */
+            .honor-img-box button.title-btn,
+            .honor-thumb {
                 width: 100%;
-                height: 100%; 
-                /* ★ 關鍵修正：確保圖片填滿容器且裁切，不變形 */
-                object-fit: cover; 
-                object-position: center 20%; /* 重點稍微往上，通常這類照片人臉在上面 */
+                height: 100%;
+                object-fit: cover; /* 裁切多餘部分，確保填滿且不變形 */
+                object-position: center top; /* 重點通常在上面 (人臉) */
+                display: block;
             }
             
             .honor-meta { text-align: left; justify-content: flex-start; margin-top: 15px; padding-top: 10px; border-top: 1px dashed #eee; }
@@ -374,7 +387,7 @@
     const DATA_URL = "https://script.google.com/macros/s/AKfycbzuomhcA9Or-G05zVZY3cPV_RkZqmr5MrY8oyiDoqh27t54KWGxxz-2MBkIYwDCAxbI/exec"; // 請確認您的網址
     const ITEMS_PER_PAGE = 3; 
 
-    // 分類設定 (對應 unitlib ID)
+    // 分類設定
     const CAT_CONFIG = {
         "all": { name: "全部", color: "var(--cat-all-bg)" },
         "10": { name: "國際", color: "var(--cat-intl-bg)" }, 
@@ -434,7 +447,7 @@
             }
         });
 
-        // 清空並重新產生按鈕
+        // 清空預設內容
         filterSection.innerHTML = "";
 
         createFilterBtn("all", counts["all"]);
@@ -502,9 +515,10 @@
 
             let imgHtml = '';
             if (item.images && item.images.length > 0) {
+                // 按鈕點擊觸發彈窗
                 imgHtml = `
                     <div class="honor-img-box">
-                        <button class="title-btn" onclick="openDetails(${start + index})" style="width:100%; height:100%; padding:0; border:none;" title="查看詳情：${item.title}">
+                        <button class="title-btn" onclick="openDetails(${start + index})" title="查看詳情：${item.title}">
                             <img src="${item.images[0].url}" class="honor-thumb" alt="${item.title} 的活動照片">
                         </button>
                     </div>`;
