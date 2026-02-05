@@ -18,6 +18,11 @@
             --link-color: #337ab7;
             --border-color: #eee;
             
+            /* 彈窗專用顏色 */
+            --modal-overlay: rgba(0, 0, 0, 0.7);
+            --badge-bg: #fff9c4; /* 淡黃色背景 */
+            --badge-text: #8d6e63; /* 褐色文字 */
+            
             /* 字體設定 */
             --main-font: "Iansui", "Microsoft JhengHei", "Heiti TC", sans-serif;
         }
@@ -92,12 +97,28 @@
         }
 
         h2.honor-title {
+            margin: 0 0 10px 0;
+            line-height: 1.5;
+        }
+
+        /* ★ 修改：標題改成按鈕樣式，讓它可以被點擊 */
+        .title-btn {
+            background: none;
+            border: none;
+            padding: 0;
             font-size: 1.25rem;
             font-weight: normal;
             color: var(--title-color);
-            margin: 0 0 10px 0;
+            text-align: left;
+            cursor: pointer;
+            font-family: inherit;
             line-height: 1.5;
-            word-wrap: break-word; 
+            text-decoration: none;
+            word-wrap: break-word;
+        }
+        .title-btn:hover {
+            color: var(--link-color);
+            text-decoration: underline;
         }
 
         .honor-desc {
@@ -143,15 +164,12 @@
             gap: 10px;
         }
 
+        /* 分頁樣式 */
         .pagination {
-            display: flex;
-            justify-content: center;
-            gap: 5px;
-            margin-top: 30px;
-            margin-bottom: 20px;
+            display: flex; justify-content: center; align-items: center;
+            gap: 5px; margin-top: 30px; margin-bottom: 20px;
             flex-wrap: wrap;
         }
-
         .page-btn {
             padding: 8px 12px;
             border: 1px solid #ddd;
@@ -164,12 +182,68 @@
             min-width: 35px;
             font-family: inherit;
         }
-
         .page-btn:hover { background-color: #eee; }
         .page-btn.active { background-color: var(--link-color); color: #fff; border-color: var(--link-color); }
         .page-btn:disabled { color: #ccc; cursor: not-allowed; }
 
         #loading { text-align: center; color: #666; padding: 20px; }
+
+        /* --- ★ 彈出視窗 (Modal) 樣式 ★ --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--modal-overlay); display: none;
+            justify-content: center; align-items: center; z-index: 9999;
+        }
+        .modal-content {
+            background: #fff; width: 95%; max-width: 900px; max-height: 90vh;
+            overflow-y: auto; padding: 2rem; border-radius: 4px; position: relative;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        /* Modal Header 佈局 */
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px;
+            flex-wrap: wrap; gap: 10px;
+        }
+        
+        .header-left { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+        
+        /* 黃色標籤樣式 (模仿截圖) */
+        .honor-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            background-color: var(--badge-bg); color: var(--badge-text);
+            padding: 6px 12px; border-radius: 4px; font-weight: bold; font-size: 1rem;
+        }
+        .badge-icon { width: 18px; height: 18px; fill: currentColor; }
+
+        .header-meta { color: #666; font-size: 0.95rem; }
+
+        .close-btn {
+            background: #fff; border: 1px solid #ccc; color: #333;
+            padding: 5px 15px; border-radius: 4px; cursor: pointer;
+            font-family: inherit; font-size: 0.95rem;
+        }
+        .close-btn:hover { background-color: #f0f0f0; }
+
+        /* Modal Body */
+        .modal-title-text {
+            font-size: 1.5rem; font-weight: bold; margin-bottom: 20px; line-height: 1.4;
+        }
+        .modal-body-text {
+            font-size: 1.1rem; line-height: 1.8; color: #333; white-space: pre-wrap; margin-bottom: 30px;
+        }
+
+        /* 照片區塊 */
+        .modal-photos-section { margin-top: 20px; }
+        .photo-list { 
+            list-style: none; padding: 0; margin: 15px 0 0 0; 
+            display: flex; flex-wrap: wrap; gap: 15px;
+        }
+        .photo-item img {
+            max-width: 100%; height: auto; border: 1px solid #ddd; padding: 3px;
+            max-height: 400px; object-fit: contain;
+        }
 
         /* RWD 設定 */
         @media (max-width: 768px) {
@@ -177,7 +251,13 @@
             .honor-img-box { width: 100%; height: auto; max-height: 250px; margin-bottom: 10px; }
             .honor-thumb { height: auto; max-height: 250px; object-position: center top; }
             .honor-meta { text-align: left; justify-content: flex-start; margin-top: 15px; padding-top: 10px; border-top: 1px dashed #eee; }
-            h2.honor-title { font-size: 1.15rem; }
+            .title-btn { font-size: 1.15rem; }
+            
+            /* Modal RWD */
+            .modal-content { padding: 1rem; }
+            .modal-header { flex-direction: column; align-items: flex-start; }
+            .header-left { width: 100%; flex-wrap: wrap; }
+            .close-btn { align-self: flex-end; margin-top: -40px; } /* 手機版把關閉按鈕往上拉 */
         }
     </style>
 </head>
@@ -197,17 +277,57 @@
         </nav>
     </div>
 
+    <div id="detail-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title-text">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="header-left">
+                    <span class="honor-badge">
+                        <svg class="badge-icon" viewBox="0 0 24 24"><path d="M20.2 2H3.8C2.8 2 2 2.8 2 3.8V5c0 1.1.9 2 2 2h.2c.5 3 2.5 5.4 5.3 6.4C10.2 16.2 12 17 12 17s1.8-.8 2.5-3.6c2.8-1 4.8-3.4 5.3-6.4h.2c1.1 0 2-.9 2-2V3.8c0-1-.8-1.8-1.8-1.8zM4 5V4h2v2c-1.1 0-2-.9-2-1zm14.2 8.4c-2.3.8-4 2.8-4.2 5.2h-4c-.2-2.4-1.9-4.4-4.2-5.2-.6-3.7-3.8-6.4-3.8-6.4V4h12v3c0 .1-3.2 2.8-3.8 6.4zM20 5c0 1.1-.9 2-2 2V4h2v1z"></path><path d="M6 19h12v2H6z"></path></svg>
+                        榮譽榜公告
+                    </span>
+                    <div class="header-meta">
+                        <span id="modal-dept"></span>
+                        <span id="modal-date" style="margin-left: 10px;"></span>
+                    </div>
+                </div>
+                <button id="modal-close-btn" class="close-btn" title="關閉視窗">關閉</button>
+            </div>
+
+            <h2 id="modal-title-text" class="modal-title-text"></h2>
+            
+            <div id="modal-body-text" class="modal-body-text"></div>
+
+            <div id="modal-photos" class="modal-photos-section" style="display:none;">
+                <span class="honor-badge">
+                    <svg class="badge-icon" viewBox="0 0 24 24"><path d="M20.2 2H3.8C2.8 2 2 2.8 2 3.8V5c0 1.1.9 2 2 2h.2c.5 3 2.5 5.4 5.3 6.4C10.2 16.2 12 17 12 17s1.8-.8 2.5-3.6c2.8-1 4.8-3.4 5.3-6.4h.2c1.1 0 2-.9 2-2V3.8c0-1-.8-1.8-1.8-1.8zM4 5V4h2v2c-1.1 0-2-.9-2-1zm14.2 8.4c-2.3.8-4 2.8-4.2 5.2h-4c-.2-2.4-1.9-4.4-4.2-5.2-.6-3.7-3.8-6.4-3.8-6.4V4h12v3c0 .1-3.2 2.8-3.8 6.4zM20 5c0 1.1-.9 2-2 2V4h2v1z"></path><path d="M6 19h12v2H6z"></path></svg>
+                    競賽照片
+                </span>
+                <ul id="photo-list" class="photo-list"></ul>
+            </div>
+        </div>
+    </div>
+
 <script>
-    // ★ 請確認此處為您的 GAS 網址 ★
-    const DATA_URL = "https://script.google.com/macros/s/AKfycbwc90f8hJZpOQYTKV3ZAOnSGnQWzAE2RzKfIF3N616zlsEu3UwFLM5Fw7_A2cRW1j_C/exec";  
+    const DATA_URL = "https://script.google.com/macros/s/AKfycbwc90f8hJZpOQYTKV3ZAOnSGnQWzAE2RzKfIF3N616zlsEu3UwFLM5Fw7_A2cRW1j_C/exec"; // 請確認您的網址
     const ITEMS_PER_PAGE = 3; 
 
     let allData = [];
     let currentPage = 1;
+    let lastFocusedElement = null;
 
     const listContainer = document.getElementById('honor-list');
     const loadingDiv = document.getElementById('loading');
     const paginationDiv = document.getElementById('pagination');
+    
+    // Modal 元素
+    const modal = document.getElementById('detail-modal');
+    const modalTitleText = document.getElementById('modal-title-text');
+    const modalDate = document.getElementById('modal-date');
+    const modalDept = document.getElementById('modal-dept');
+    const modalBodyText = document.getElementById('modal-body-text');
+    const modalPhotos = document.getElementById('modal-photos');
+    const photoList = document.getElementById('photo-list');
+    const closeBtn = document.getElementById('modal-close-btn');
 
     fetch(DATA_URL)
         .then(res => res.json())
@@ -233,7 +353,7 @@
         const end = start + ITEMS_PER_PAGE;
         const pageItems = allData.slice(start, end);
 
-        pageItems.forEach(item => {
+        pageItems.forEach((item, index) => {
             const li = document.createElement('li');
             li.className = 'honor-item';
             
@@ -241,14 +361,15 @@
             const dateStr = d ? `${d.substring(0,4)}-${d.substring(4,6)}-${d.substring(6,8)}` : '';
             const docNo = item.doc_no ? `文號: ${item.doc_no}` : '';
             
-            // ★ 修改：圖片增加 title 屬性，alt 使用詳細標題
+            // 列表圖片 (只顯示第一張縮圖)
             let imgHtml = '';
             if (item.images && item.images.length > 0) {
+                // 點擊縮圖也開啟 Modal (因為原版網站通常是這樣)
                 imgHtml = `
                     <div class="honor-img-box">
-                        <a href="${item.images[0].url}" target="_blank" title="查看圖片：${item.title}">
+                        <button class="title-btn" onclick="openDetails(${start + index})" style="width:100%; height:100%; padding:0; border:none;" title="查看詳情：${item.title}">
                             <img src="${item.images[0].url}" class="honor-thumb" alt="${item.title} 的活動照片">
-                        </a>
+                        </button>
                     </div>`;
             } else {
                 imgHtml = `
@@ -261,14 +382,18 @@
             const btnId = `btn-${item.id}`;
             let descHtml = `<div id="${contentId}" class="honor-desc desc-truncated">${item.content}</div>`;
             
-            // ★ 修改：按鈕增加 title 屬性
-            let moreBtnHtml = `<button id="${btnId}" class="show-more-btn" onclick="toggleMore('${contentId}', '${btnId}')" aria-expanded="false" aria-controls="${contentId}" title="展開閱讀：${item.title}">顯示更多內容...</button>`;
+            // 顯示更多按鈕 (展開列表內容，不開彈窗)
+            let moreBtnHtml = `<button id="${btnId}" class="show-more-btn" onclick="toggleMore('${contentId}', '${btnId}')" aria-expanded="false" aria-controls="${contentId}" title="在列表中展開：${item.title}">顯示更多內容...</button>`;
 
-            // ★ 修改：Meta 資訊增加 sr-only 引導文字，讓閱讀器讀起來有邏輯
+            // ★ 修改：標題改成 Button，點擊開啟 Modal
             li.innerHTML = `
                 ${imgHtml}
                 <div class="honor-content-box">
-                    <h2 class="honor-title">${item.title}</h2>
+                    <h2 class="honor-title">
+                        <button class="title-btn" onclick="openDetails(${start + index})" title="查看詳情：${item.title}">
+                            ${item.title}
+                        </button>
+                    </h2>
                     ${descHtml}
                     ${moreBtnHtml}
                     <div class="honor-meta">
@@ -295,6 +420,49 @@
         }
     }
 
+    // ★ 開啟彈窗功能
+    window.openDetails = function(index) {
+        const item = allData[index];
+        lastFocusedElement = document.activeElement;
+        
+        // 填入資料
+        modalTitleText.textContent = item.title;
+        modalBodyText.textContent = item.content;
+        
+        const d = item.date;
+        const dateStr = d ? `${d.substring(0,4)}-${d.substring(4,6)}-${d.substring(6,8)}` : '';
+        modalDate.textContent = dateStr;
+        modalDept.textContent = item.dept;
+
+        // 處理照片區塊
+        if (item.images && item.images.length > 0) {
+            modalPhotos.style.display = 'block';
+            photoList.innerHTML = item.images.map(img => `
+                <li class="photo-item">
+                    <img src="${img.url}" alt="競賽照片：${item.title}" title="競賽照片">
+                </li>
+            `).join('');
+        } else {
+            modalPhotos.style.display = 'none';
+        }
+
+        // 顯示 Modal
+        modal.style.display = 'flex';
+        closeBtn.focus(); // 焦點移到關閉按鈕
+        document.body.style.overflow = 'hidden'; // 禁止背景捲動
+    };
+
+    function closeModal() {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+        if (lastFocusedElement) lastFocusedElement.focus();
+    }
+
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal.style.display === 'flex') closeModal(); });
+
+    // 分頁邏輯 (同公告)
     function renderPagination() {
         paginationDiv.innerHTML = "";
         const totalPages = Math.ceil(allData.length / ITEMS_PER_PAGE);
@@ -306,9 +474,6 @@
         const startPage = (currentGroup - 1) * pagesPerGroup + 1;
         const endPage = Math.min(startPage + pagesPerGroup - 1, totalPages);
 
-        // ★ 修改：所有分頁按鈕都增加 title 屬性
-
-        // --- << 上10頁 ---
         if (startPage > 1) {
              const prevGroupBtn = document.createElement('button');
              prevGroupBtn.className = 'page-btn';
@@ -319,7 +484,6 @@
              paginationDiv.appendChild(prevGroupBtn);
         }
 
-        // --- < 上一頁 ---
         const prevBtn = document.createElement('button');
         prevBtn.className = 'page-btn';
         prevBtn.innerText = "<";
@@ -329,7 +493,6 @@
         prevBtn.onclick = () => renderPage(currentPage - 1);
         paginationDiv.appendChild(prevBtn);
 
-        // --- 數字頁碼 ---
         for (let i = startPage; i <= endPage; i++) {
             const btn = document.createElement('button');
             btn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
@@ -341,7 +504,6 @@
             paginationDiv.appendChild(btn);
         }
 
-        // --- > 下一頁 ---
         const nextBtn = document.createElement('button');
         nextBtn.className = 'page-btn';
         nextBtn.innerText = ">";
@@ -351,7 +513,6 @@
         nextBtn.onclick = () => renderPage(currentPage + 1);
         paginationDiv.appendChild(nextBtn);
 
-        // --- >> 下10頁 ---
         if (endPage < totalPages) {
              const nextGroupBtn = document.createElement('button');
              nextGroupBtn.className = 'page-btn';
