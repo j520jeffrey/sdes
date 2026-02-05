@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>學校公告組件</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Iansui&display=swap" rel="stylesheet">
+
     <style>
         :root {
             --bg-color: transparent; 
@@ -18,20 +23,36 @@
             --tag-bg-1: #0066cc; /* 藍色 */
             --tag-bg-2: #2e7d32; /* 綠色 */
             --tag-bg-dept: #f0f0f0; /* 處室預設灰 */
+
+            /* ★ 設定字體變數 */
+            --main-font: "Iansui", "Microsoft JhengHei", "Heiti TC", sans-serif;
+        }
+
+        /* 全域設定 */
+        *, *::before, *::after {
+            box-sizing: border-box;
         }
 
         body {
-            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            /* ★ 套用新字體 */
+            font-family: var(--main-font);
+            
             background-color: var(--bg-color);
             color: var(--text-color);
             line-height: 1.5;
             margin: 0;
             padding: 0;
             font-size: 1rem;
+            width: 100%;
+            overflow-x: hidden;
         }
 
+        /* 容器控制 */
         .container {
-            width: 100%; max-width: 100%; margin: 0; padding: 0 5px; box-sizing: border-box;
+            width: 100%; 
+            max-width: 100vw; 
+            margin: 0; 
+            padding: 0 5px; 
         }
 
         /* --- SVG 圖示 --- */
@@ -46,14 +67,15 @@
         }
         .filter-btn {
             background-color: #fff; border: 1px solid #0044cc; color: #0044cc;
-            padding: 0.2rem 0.6rem; font-size: 0.9rem; border-radius: 2rem;
+            padding: 0.2rem 0.6rem; font-size: 0.95rem; border-radius: 2rem;
             cursor: pointer; transition: all 0.2s;
+            font-family: inherit; /* 繼承芫荽字體 */
         }
         .filter-btn:hover { background-color: #e6f0ff; }
         .filter-btn.active { background-color: var(--btn-active-bg); color: var(--btn-active-text); }
         .filter-btn:focus { outline: var(--focus-outline); }
         .count-badge {
-            background-color: #eee; color: #333; font-size: 0.8em;
+            background-color: #eee; color: #333; font-size: 0.85em;
             padding: 1px 5px; border-radius: 10px; margin-left: 4px;
         }
         .filter-btn.active .count-badge { background-color: rgba(255,255,255,0.3); color: #fff; }
@@ -66,22 +88,25 @@
         }
         .list-item:hover { background-color: rgba(0,0,0,0.03); }
         
-        .list-date { font-family: monospace; font-size: 0.95rem; color: #555; flex-shrink: 0; width: 11ch; }
+        .list-date { 
+            font-family: var(--main-font); /* 確保日期也用新字體，或改回 monospace */
+            font-size: 1rem; color: #555; flex-shrink: 0; width: 11ch; 
+        }
         
-        /* ★ 標籤容器調整：支援多標籤，移除固定寬度 ★ */
+        /* 標籤容器調整 */
         .list-tags {
             display: flex;
             gap: 4px;
             flex-wrap: wrap;
-            min-width: 80px; /* 給個最小寬度，避免太擠 */
-            max-width: 25%; /* 限制最大寬度，避免標籤太多擠壓到標題 */
+            min-width: 80px; 
+            max-width: 25%; 
         }
 
         /* 個別標籤樣式 */
         .tag-badge {
             padding: 0.2rem 0.5rem; 
             border-radius: 4px;
-            font-size: 0.85rem; 
+            font-size: 0.9rem; 
             white-space: nowrap;
             display: inline-block;
         }
@@ -90,12 +115,14 @@
         .tag-cat-secondary { background-color: var(--tag-bg-2); color: #fff; }
         .tag-dept { background-color: var(--tag-bg-dept); color: #333; }
 
-        .list-title { flex-grow: 1; }
+        .list-title { flex-grow: 1; min-width: 0; } /* min-width: 0 防止被撐開 */
+        
         .title-btn {
-            background: none; border: none; padding: 0; font-size: 1.05rem;
+            background: none; border: none; padding: 0; font-size: 1.1rem; /* 稍微加大字體 */
             color: var(--link-color); text-decoration: none; cursor: pointer;
-            text-align: left; font-weight: bold; font-family: inherit;
+            text-align: left; font-weight: normal; font-family: inherit;
             line-height: 1.5; display: inline-block;
+            word-wrap: break-word; /* 防止長標題撐開 */
         }
         .title-btn:hover { color: #002266; text-decoration: underline; }
         .title-btn:focus { outline: var(--focus-outline); background-color: #000; color: #ffcc00; }
@@ -106,8 +133,9 @@
             gap: 1rem; margin-top: 1rem; margin-bottom: 1rem;
         }
         .page-btn {
-            padding: 0.3rem 0.8rem; font-size: 0.9rem; cursor: pointer;
+            padding: 0.3rem 0.8rem; font-size: 1rem; cursor: pointer;
             background-color: #fff; border: 1px solid #999; border-radius: 4px;
+            font-family: inherit;
         }
         .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
@@ -121,38 +149,39 @@
             overflow-y: auto; padding: 1.5rem; border: 2px solid #000;
             border-radius: 0.5rem; position: relative;
         }
-        .modal-body { white-space: pre-wrap; line-height: 1.8; }
+        .modal-body { white-space: pre-wrap; line-height: 1.8; font-size: 1.05rem; }
         .modal-body * { color: #000 !important; background: transparent !important; font-size: inherit !important; font-family: inherit !important; }
         .close-btn {
             position: absolute; top: 1rem; right: 1rem;
             background: #cc0000; color: #fff; border: 1px solid #000;
             padding: 0.3rem 1rem; font-weight: bold; cursor: pointer;
+            font-family: inherit;
         }
         .attachments-area { background: #f4f4f4; padding: 1rem; border: 1px dashed #666; margin-top: 1rem; }
         .attachments-area a { color: var(--link-color); font-weight: bold; display: inline-block; padding: 0.3rem; }
-        #loading { font-size: 0.9rem; color: #666; padding: 1rem; text-align: center; }
+        #loading { font-size: 1rem; color: #666; padding: 1rem; text-align: center; }
 
         @media (max-width: 600px) {
             .list-item { flex-direction: column; align-items: flex-start; gap: 0.3rem; }
-            .list-date { width: auto; font-size: 0.85rem; display: inline-block; margin-right: 10px;}
-            .list-tags { max-width: 100%; margin-bottom: 4px; } /* 手機版讓標籤獨佔一行 */
+            .list-date { width: auto; font-size: 0.9rem; display: inline-block; margin-right: 10px;}
+            .list-tags { max-width: 100%; margin-bottom: 4px; } 
             .modal-content { width: 95%; padding: 1rem; }
             .filter-section { gap: 0.3rem; }
-            .filter-btn { font-size: 0.85rem; padding: 0.2rem 0.5rem; }
+            .filter-btn { font-size: 0.9rem; padding: 0.2rem 0.5rem; }
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="loading">↻ 資料載入中...</div>
+    <div id="loading">↻ 公告載入中...</div>
     <nav class="filter-section" aria-label="公告分類篩選">
         <button class="filter-btn active" data-cat="all">全部公告</button>
     </nav>
     <ul id="announcement-list" class="announcement-list" aria-live="polite"></ul>
     <div class="pagination" id="pagination-controls" style="display:none;">
         <button id="prev-btn" class="page-btn">← 上一頁</button>
-        <span id="page-info" style="font-weight:bold; font-size: 0.9rem;">1 / 1</span>
+        <span id="page-info" style="font-weight:bold; font-size: 1rem;">1 / 1</span>
         <button id="next-btn" class="page-btn">下一頁 →</button>
     </div>
 </div>
@@ -161,8 +190,8 @@
     <div class="modal-content">
         <button id="modal-close-btn" class="close-btn" aria-label="關閉視窗">關閉 X</button>
         <div style="border-bottom: 2px solid #eee; margin-bottom: 1rem; padding-bottom: 0.5rem;">
-            <h2 id="modal-title" style="margin:0 0 10px 0;">公告詳細內容</h2>
-            <div style="color:#555;">
+            <h2 id="modal-title" style="margin:0 0 10px 0; font-weight:normal;">公告詳細內容</h2>
+            <div style="color:#555; font-size: 0.95rem;">
                 <span id="modal-date"></span> | <span id="modal-dept"></span>
             </div>
         </div>
@@ -175,7 +204,7 @@
 </div>
 
 <script>
-    // ★ 請確認此處為您的 GAS 網址 ★
+    // ★ 請確認此處為您的 GAS 網址 (公告用的那支) ★
     const DATA_URL = "https://script.google.com/macros/s/AKfycbxeoMbP6WVHLsG_hRULG_iuXlXiIIx0abYG0v0wh7ahqnKXn4qsqJe7sbz2Rnom5RKZ/exec";
     const ITEMS_PER_PAGE = 15;
     const NEW_DAYS_LIMIT = 7; 
@@ -250,7 +279,6 @@
     function initFilters() {
         const counts = {};
         allData.forEach(item => {
-            // 計算分類數量 (如果一個公告有多個分類，每個都要加 1)
             if (item.category_ids && Array.isArray(item.category_ids)) {
                 item.category_ids.forEach(catId => {
                      counts[catId] = (counts[catId] || 0) + 1;
@@ -285,7 +313,6 @@
         if (category === 'all') {
             filteredData = allData;
         } else {
-            // 篩選邏輯更新：檢查 category_ids 陣列中是否包含該分類
             filteredData = allData.filter(item => {
                 return item.category_ids && item.category_ids.includes(category);
             });
@@ -330,24 +357,20 @@
             li.className = 'list-item';
             const simpleDate = item.date ? item.date.split(' ')[0] : '-';
             
-            // ★ 生成多重標籤 HTML ★
             let tagsHtml = '';
             if (item.category_ids && Array.isArray(item.category_ids) && item.category_ids.length > 0) {
                 item.category_ids.forEach((id, i) => {
                     const catName = CATEGORY_MAP[id];
                     if (catName) {
-                        // 為了視覺好看，交替使用不同顏色
                         const colorClass = (i % 2 === 0) ? 'tag-cat-primary' : 'tag-cat-secondary';
                         tagsHtml += `<span class="tag-badge ${colorClass}">${catName}</span>`;
                     }
                 });
             }
-            // 如果沒分類，顯示處室
             if (!tagsHtml) {
                 tagsHtml = `<span class="tag-badge tag-dept">${item.department}</span>`;
             }
 
-            // 圖示邏輯
             let topHtml = "";
             if (item.is_top == 1 || item.is_top === "1") {
                 topHtml = SVG_TOP;
