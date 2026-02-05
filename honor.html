@@ -33,10 +33,7 @@
             padding: 0;
             width: 100%;
             overflow-x: hidden;
-            
-            /* 套用新字體 */
             font-family: var(--main-font);
-            
             background-color: var(--bg-color);
             color: var(--text-color);
         }
@@ -48,6 +45,7 @@
             max-width: 100vw;
         }
 
+        /* 無障礙專用隱藏類別 */
         .sr-only {
             position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
             overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
@@ -201,7 +199,7 @@
 
 <script>
     // ★ 請確認此處為您的 GAS 網址 ★
-    const DATA_URL = "https://script.google.com/macros/s/AKfycbwc90f8hJZpOQYTKV3ZAOnSGnQWzAE2RzKfIF3N616zlsEu3UwFLM5Fw7_A2cRW1j_C/exec"; 
+    const DATA_URL = "https://script.google.com/macros/s/AKfycbwc90f8hJZpOQYTKV3ZAOnSGnQWzAE2RzKfIF3N616zlsEu3UwFLM5Fw7_A2cRW1j_C/exec";  
     const ITEMS_PER_PAGE = 3; 
 
     let allData = [];
@@ -214,9 +212,7 @@
     fetch(DATA_URL)
         .then(res => res.json())
         .then(json => {
-            // 資料載入成功後，隱藏載入提示
             loadingDiv.style.display = 'none';
-            
             if (json.status !== "success" || !json.data || json.data.length === 0) {
                 listContainer.innerHTML = "<div style='text-align:center; padding:20px'>無資料</div>";
                 return;
@@ -245,12 +241,13 @@
             const dateStr = d ? `${d.substring(0,4)}-${d.substring(4,6)}-${d.substring(6,8)}` : '';
             const docNo = item.doc_no ? `文號: ${item.doc_no}` : '';
             
+            // ★ 修改：圖片增加 title 屬性，alt 使用詳細標題
             let imgHtml = '';
             if (item.images && item.images.length > 0) {
                 imgHtml = `
                     <div class="honor-img-box">
-                        <a href="${item.images[0].url}" target="_blank" aria-label="查看圖片：${item.title}">
-                            <img src="${item.images[0].url}" class="honor-thumb" alt="活動照片">
+                        <a href="${item.images[0].url}" target="_blank" title="查看圖片：${item.title}">
+                            <img src="${item.images[0].url}" class="honor-thumb" alt="${item.title} 的活動照片">
                         </a>
                     </div>`;
             } else {
@@ -263,8 +260,11 @@
             const contentId = `desc-${item.id}`;
             const btnId = `btn-${item.id}`;
             let descHtml = `<div id="${contentId}" class="honor-desc desc-truncated">${item.content}</div>`;
-            let moreBtnHtml = `<button id="${btnId}" class="show-more-btn" onclick="toggleMore('${contentId}', '${btnId}')" aria-expanded="false" aria-controls="${contentId}">顯示更多內容...</button>`;
+            
+            // ★ 修改：按鈕增加 title 屬性
+            let moreBtnHtml = `<button id="${btnId}" class="show-more-btn" onclick="toggleMore('${contentId}', '${btnId}')" aria-expanded="false" aria-controls="${contentId}" title="展開閱讀：${item.title}">顯示更多內容...</button>`;
 
+            // ★ 修改：Meta 資訊增加 sr-only 引導文字，讓閱讀器讀起來有邏輯
             li.innerHTML = `
                 ${imgHtml}
                 <div class="honor-content-box">
@@ -272,9 +272,9 @@
                     ${descHtml}
                     ${moreBtnHtml}
                     <div class="honor-meta">
-                        <span class="meta-tag">${docNo}</span>
-                        <span class="meta-tag">${item.dept}</span>
-                        <span class="meta-tag">${dateStr}</span>
+                        <span class="meta-tag"><span class="sr-only">文號：</span>${docNo}</span>
+                        <span class="meta-tag"><span class="sr-only">發布單位：</span>${item.dept}</span>
+                        <span class="meta-tag"><span class="sr-only">發布日期：</span>${dateStr}</span>
                     </div>
                 </div>
             `;
@@ -306,6 +306,8 @@
         const startPage = (currentGroup - 1) * pagesPerGroup + 1;
         const endPage = Math.min(startPage + pagesPerGroup - 1, totalPages);
 
+        // ★ 修改：所有分頁按鈕都增加 title 屬性
+
         // --- << 上10頁 ---
         if (startPage > 1) {
              const prevGroupBtn = document.createElement('button');
@@ -332,6 +334,7 @@
             const btn = document.createElement('button');
             btn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
             btn.innerText = i;
+            btn.title = `前往第 ${i} 頁`;
             btn.setAttribute('aria-label', `第 ${i} 頁`);
             if(i === currentPage) btn.setAttribute('aria-current', 'page');
             btn.onclick = () => renderPage(i);
