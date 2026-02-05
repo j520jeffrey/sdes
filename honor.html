@@ -14,22 +14,29 @@
             --border-color: #eee;
         }
 
-        /* ★ 全域設定：這是解決寬度問題的關鍵，確保 Padding 不會撐大寬度 */
+        /* ★ 關鍵修正 1：全域 Box Sizing，防止 Padding 撐大元素 */
         *, *::before, *::after {
             box-sizing: border-box;
         }
 
-        body {
+        /* ★ 關鍵修正 2：Body 歸零並隱藏捲軸 */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            overflow-x: hidden; /* 強制隱藏水平捲軸 */
             font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
-            margin: 0;
-            padding: 10px;
-            width: 100%; /* 確保 body 不超過視窗 */
-            overflow-x: hidden; /* 防止橫向捲軸 */
         }
 
-        /* 無障礙隱藏 */
+        /* ★ 關鍵修正 3：新增一個容器來控制邊距，取代原本 body 的 padding */
+        .main-wrapper {
+            padding: 10px;
+            width: 100%;
+            max-width: 100vw; /* 確保不超過視窗寬度 */
+        }
+
         .sr-only {
             position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
             overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
@@ -53,7 +60,7 @@
         /* 左側圖片區 */
         .honor-img-box {
             flex-shrink: 0;
-            width: 240px; /* 電腦版固定寬度 */
+            width: 240px; 
             height: 160px;
         }
 
@@ -64,7 +71,7 @@
             border: 1px solid #ddd;
             padding: 3px;
             background: #fff;
-            display: block; /* 消除圖片底部空隙 */
+            display: block; 
         }
 
         /* 右側內容區 */
@@ -72,7 +79,7 @@
             flex-grow: 1;
             display: flex;
             flex-direction: column;
-            min-width: 0; /* ★ 關鍵：防止 Flex 子元素被長文字撐開 */
+            min-width: 0; /* 防止 Flex 子元素被長文字撐開 */
         }
 
         h2.honor-title {
@@ -81,7 +88,6 @@
             color: var(--title-color);
             margin: 0 0 10px 0;
             line-height: 1.5;
-            /* 防止標題太長撐開 */
             word-wrap: break-word; 
         }
 
@@ -91,7 +97,6 @@
             line-height: 1.6;
             margin-bottom: 10px;
             white-space: pre-wrap;
-            /* ★ 防止內容有長網址撐爆手機版 */
             word-break: break-word; 
             overflow-wrap: break-word;
         }
@@ -124,23 +129,22 @@
             font-size: 0.85rem;
             color: var(--meta-color);
             display: flex;
-            flex-wrap: wrap; /* 允許 Meta 資訊換行 */
+            flex-wrap: wrap; 
             justify-content: flex-end;
             gap: 10px;
         }
 
-        /* 分頁 */
         .pagination {
             display: flex;
             justify-content: center;
             gap: 5px;
             margin-top: 30px;
             margin-bottom: 20px;
-            flex-wrap: wrap; /* 手機版頁碼太多時可換行 */
+            flex-wrap: wrap;
         }
 
         .page-btn {
-            padding: 8px 14px; /* 加大點擊區域，對手機友善 */
+            padding: 8px 14px;
             border: 1px solid #ddd;
             background: #fff;
             color: var(--link-color);
@@ -156,16 +160,16 @@
 
         #loading { text-align: center; color: #666; padding: 20px; }
 
-        /* ★ 手機版/平板版 RWD 設定 (768px 以下) ★ */
+        /* RWD 設定 (768px 以下自動切換) */
         @media (max-width: 768px) {
             .honor-item {
-                flex-direction: column; /* 改為上下排列 */
+                flex-direction: column; /* 上下排列 */
             }
 
             .honor-img-box {
-                width: 100%; /* 圖片寬度填滿 */
+                width: 100%;
                 height: auto;
-                max-height: 250px; /* 限制最大高度 */
+                max-height: 250px;
                 margin-bottom: 10px;
             }
 
@@ -177,31 +181,33 @@
 
             .honor-meta {
                 text-align: left;
-                justify-content: flex-start; /* 靠左對齊 */
+                justify-content: flex-start;
                 margin-top: 15px;
                 padding-top: 10px;
                 border-top: 1px dashed #eee;
             }
             
             h2.honor-title {
-                font-size: 1.1rem; /* 手機標題稍微調小 */
+                font-size: 1.1rem;
             }
         }
     </style>
 </head>
 <body>
 
-    <h1 class="sr-only">學校榮譽榜列表</h1>
+    <div class="main-wrapper">
+        <h1 class="sr-only">學校榮譽榜列表</h1>
 
-    <div id="loading" role="status">↻ 榮譽榜載入中...</div>
-    
-    <nav aria-label="榮譽榜列表">
-        <ul id="honor-list" class="honor-list"></ul>
-    </nav>
+        <div id="loading" role="status">↻ 榮譽榜載入中...</div>
+        
+        <nav aria-label="榮譽榜列表">
+            <ul id="honor-list" class="honor-list"></ul>
+        </nav>
 
-    <nav aria-label="分頁導航">
-        <div id="pagination" class="pagination"></div>
-    </nav>
+        <nav aria-label="分頁導航">
+            <div id="pagination" class="pagination"></div>
+        </nav>
+    </div>
 
 <script>
     // ★ 請確認此處為您的 GAS 網址 ★
