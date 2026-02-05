@@ -113,7 +113,7 @@
             font-size: 0.9rem; 
             white-space: nowrap;
             display: inline-block;
-            cursor: default; /* 讓滑鼠移過去像一般文字 */
+            cursor: default;
         }
         
         .tag-cat-primary { background-color: var(--tag-bg-1); color: #fff; }
@@ -133,16 +133,27 @@
         .title-btn:focus { outline: var(--focus-outline); background-color: #000; color: #ffcc00; }
 
         /* --- 分頁與Modal --- */
+        /* ★ 修改：統一分頁樣式，與榮譽榜一致 */
         .pagination {
             display: flex; justify-content: center; align-items: center;
-            gap: 1rem; margin-top: 1rem; margin-bottom: 1rem;
+            gap: 5px; margin-top: 1.5rem; margin-bottom: 1rem;
+            flex-wrap: wrap;
         }
         .page-btn {
-            padding: 0.3rem 0.8rem; font-size: 1rem; cursor: pointer;
-            background-color: #fff; border: 1px solid #999; border-radius: 4px;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            background: #fff;
+            color: var(--link-color);
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 1rem;
+            border-radius: 4px;
+            min-width: 35px; /* 統一按鈕寬度 */
             font-family: inherit;
         }
-        .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .page-btn:hover { background-color: #eee; }
+        .page-btn.active { background-color: var(--link-color); color: #fff; border-color: var(--link-color); }
+        .page-btn:disabled { color: #ccc; cursor: not-allowed; }
 
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -187,11 +198,9 @@
     
     <ul id="announcement-list" class="announcement-list" aria-live="polite"></ul>
     
-    <div class="pagination" id="pagination-controls" style="display:none;">
-        <button id="prev-btn" class="page-btn" aria-label="上一頁" title="上一頁">← 上一頁</button>
-        <span id="page-info" aria-hidden="true" style="font-weight:bold; font-size: 1rem;">1 / 1</span>
-        <button id="next-btn" class="page-btn" aria-label="下一頁" title="下一頁">下一頁 →</button>
-    </div>
+    <nav aria-label="分頁導航">
+        <div id="pagination" class="pagination"></div>
+    </nav>
 </div>
 
 <div id="detail-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
@@ -213,10 +222,10 @@
 
 <script>
     const DATA_URL = "https://script.google.com/macros/s/AKfycbxeoMbP6WVHLsG_hRULG_iuXlXiIIx0abYG0v0wh7ahqnKXn4qsqJe7sbz2Rnom5RKZ/exec";
-    const ITEMS_PER_PAGE = 15;
+    const ITEMS_PER_PAGE = 15; // 每頁筆數
     const NEW_DAYS_LIMIT = 7; 
 
-    // SVG 保持 role="img" 和 title，確保通過檢測
+    // SVG 保持 role="img" 和 title
     const SVG_TOP = `<svg role="img" aria-label="置頂" class="icon-svg icon-top" viewBox="0 0 24 24" fill="currentColor"><title>置頂</title><path d="M16 9V4l1 0c0.55 0 1-0.45 1-1s-0.45-1-1-1H7C6.45 2 6 2.45 6 3s0.45 1 1 1l1 0v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"></path></svg>`;
     const SVG_NEW = `<svg role="img" aria-label="最新" class="icon-svg icon-new" viewBox="0 0 34 16"><title>最新</title><rect width="34" height="16" rx="3" fill="#d32f2f"/><text x="17" y="12" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-weight="bold" font-size="10">NEW</text></svg>`;
 
@@ -235,10 +244,9 @@
 
     const listContainer = document.getElementById('announcement-list');
     const loadingDiv = document.getElementById('loading');
-    const paginationControls = document.getElementById('pagination-controls');
-    const pageInfo = document.getElementById('page-info');
-    const prevBtn = document.getElementById('prev-btn');
-    const nextBtn = document.getElementById('next-btn');
+    // ★ 修改：指向新的分頁容器
+    const paginationDiv = document.getElementById('pagination');
+    
     const filterSection = document.querySelector('.filter-section');
     const modal = document.getElementById('detail-modal');
     const modalTitle = document.getElementById('modal-title');
@@ -275,7 +283,7 @@
             allData = json.data;
             filteredData = allData; 
             initFilters();
-            initPagination();
+            // initPagination 不需要了，改用動態渲染
             renderPage(1);
         })
         .catch(err => {
@@ -298,7 +306,6 @@
             const btn = document.createElement('button');
             btn.className = 'filter-btn';
             btn.dataset.cat = catId;
-            // ★ 修改：加入 title 屬性
             btn.title = `篩選分類：${name}`;
             btn.innerHTML = `${name} <span class="count-badge">${count}</span>`;
             btn.addEventListener('click', () => {
@@ -328,20 +335,6 @@
         }
         currentPage = 1;
         renderPage(1);
-        updatePaginationVisibility();
-    }
-
-    function updatePaginationVisibility() {
-        paginationControls.style.display = (filteredData.length > ITEMS_PER_PAGE) ? 'flex' : 'none';
-    }
-
-    function initPagination() {
-        updatePaginationVisibility();
-        prevBtn.addEventListener('click', () => { if (currentPage > 1) renderPage(currentPage - 1); });
-        nextBtn.addEventListener('click', () => { 
-            const maxPage = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
-            if (currentPage < maxPage) renderPage(currentPage + 1); 
-        });
     }
 
     function renderPage(page) {
@@ -349,17 +342,13 @@
         listContainer.innerHTML = "";
         if (filteredData.length === 0) {
             listContainer.innerHTML = "<li style='padding:20px; text-align:center; color:#666;'>此分類沒有公告。</li>";
-            pageInfo.textContent = "0 / 0";
+            // 清空分頁
+            paginationDiv.innerHTML = "";
             return;
         }
         const start = (page - 1) * ITEMS_PER_PAGE;
         const end = start + ITEMS_PER_PAGE;
         const pageItems = filteredData.slice(start, end);
-        const maxPage = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
-        
-        pageInfo.textContent = `${currentPage} / ${maxPage}`;
-        prevBtn.disabled = (currentPage === 1);
-        nextBtn.disabled = (currentPage === maxPage);
 
         pageItems.forEach((item, index) => {
             const li = document.createElement('li');
@@ -372,13 +361,11 @@
                     const catName = CATEGORY_MAP[id];
                     if (catName) {
                         const colorClass = (i % 2 === 0) ? 'tag-cat-primary' : 'tag-cat-secondary';
-                        // ★ 修改：Tag 增加 title 屬性 (分類: 名稱)
                         tagsHtml += `<span class="tag-badge ${colorClass}" title="分類：${catName}"><span class="sr-only">分類：</span>${catName}</span>`;
                     }
                 });
             }
             if (!tagsHtml) {
-                // ★ 修改：處室 Tag 也增加 title
                 tagsHtml = `<span class="tag-badge tag-dept" title="發布單位：${item.department}"><span class="sr-only">發布單位：</span>${item.department}</span>`;
             }
 
@@ -391,9 +378,6 @@
                 newHtml = SVG_NEW;
             }
 
-            // ★ 修改：
-            // 1. 日期加上 title
-            // 2. 按鈕加上 title="查看公告：[標題]"，滿足替代文字需求，滑鼠移過有提示
             li.innerHTML = `
                 <div class="list-date" title="發布日期：${simpleDate}"><span class="sr-only">發布日期：</span>${simpleDate}</div>
                 <div class="list-tags">
@@ -407,13 +391,82 @@
             `;
             listContainer.appendChild(li);
         });
+
+        // 渲染分頁
+        renderPagination();
+    }
+
+    // ★ 修改：使用與榮譽榜相同的分頁邏輯 (支援分組)
+    function renderPagination() {
+        paginationDiv.innerHTML = "";
+        const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
+        
+        if (totalPages <= 1) return;
+
+        const pagesPerGroup = 10;
+        const currentGroup = Math.ceil(currentPage / pagesPerGroup);
+        const startPage = (currentGroup - 1) * pagesPerGroup + 1;
+        const endPage = Math.min(startPage + pagesPerGroup - 1, totalPages);
+
+        // --- << 上10頁 ---
+        if (startPage > 1) {
+             const prevGroupBtn = document.createElement('button');
+             prevGroupBtn.className = 'page-btn';
+             prevGroupBtn.innerText = "<<"; 
+             prevGroupBtn.title = "上10頁";
+             prevGroupBtn.setAttribute('aria-label', '上10頁');
+             prevGroupBtn.onclick = () => renderPage(startPage - 1); 
+             paginationDiv.appendChild(prevGroupBtn);
+        }
+
+        // --- < 上一頁 ---
+        const prevBtn = document.createElement('button');
+        prevBtn.className = 'page-btn';
+        prevBtn.innerText = "<";
+        prevBtn.title = "上一頁";
+        prevBtn.disabled = currentPage === 1;
+        prevBtn.setAttribute('aria-label', '上一頁');
+        prevBtn.onclick = () => renderPage(currentPage - 1);
+        paginationDiv.appendChild(prevBtn);
+
+        // --- 數字頁碼 ---
+        for (let i = startPage; i <= endPage; i++) {
+            const btn = document.createElement('button');
+            btn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+            btn.innerText = i;
+            btn.title = `前往第 ${i} 頁`;
+            btn.setAttribute('aria-label', `第 ${i} 頁`);
+            if(i === currentPage) btn.setAttribute('aria-current', 'page');
+            btn.onclick = () => renderPage(i);
+            paginationDiv.appendChild(btn);
+        }
+
+        // --- > 下一頁 ---
+        const nextBtn = document.createElement('button');
+        nextBtn.className = 'page-btn';
+        nextBtn.innerText = ">";
+        nextBtn.title = "下一頁";
+        nextBtn.disabled = currentPage === totalPages;
+        nextBtn.setAttribute('aria-label', '下一頁');
+        nextBtn.onclick = () => renderPage(currentPage + 1);
+        paginationDiv.appendChild(nextBtn);
+
+        // --- >> 下10頁 ---
+        if (endPage < totalPages) {
+             const nextGroupBtn = document.createElement('button');
+             nextGroupBtn.className = 'page-btn';
+             nextGroupBtn.innerText = ">>"; 
+             nextGroupBtn.title = "下10頁";
+             nextGroupBtn.setAttribute('aria-label', '下10頁');
+             nextGroupBtn.onclick = () => renderPage(endPage + 1); 
+             paginationDiv.appendChild(nextGroupBtn);
+        }
     }
 
     window.openDetails = function(index) {
         const item = filteredData[index];
         lastFocusedElement = document.activeElement;
         
-        // Modal 標題增加 title
         modalTitle.textContent = item.title;
         modalTitle.setAttribute('title', `公告標題：${item.title}`);
         
@@ -423,7 +476,6 @@
         
         if (item.attachments && item.attachments.length > 0) {
             modalAttachments.style.display = 'block';
-            // ★ 修改：附件連結加入 title="下載附件：[檔名]"
             attachmentList.innerHTML = item.attachments.map(f => `
                 <li><a href="${f.url}" target="_blank" title="下載附件：${f.name}">下載：${f.name}</a></li>
             `).join('');
