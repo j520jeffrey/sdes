@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>榮譽榜</title>
+    <style>
+        :root {
+            --bg-color: transparent;
+            --text-color: #333;
+            --title-color: #333;
+            --meta-color: #999;
+            --link-color: #337ab7;
+            --border-color: #eee;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 10px;
+        }
+
+        .honor-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .honor-item {
+            display: flex;
+            gap: 20px;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .honor-img-box {
+            flex-shrink: 0;
+            width: 240px;
+            height: 160px;
+        }
+
+        .honor-thumb {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border: 1px solid #ddd;
+            padding: 3px;
+            background: #fff;
+        }
+
+        .honor-content-box {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .honor-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--title-color);
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .honor-desc {
+            font-size: 1rem;
+            color: #444;
+            line-height: 1.6;
+            margin-bottom: 10px;
+            white-space: pre-wrap;
+        }
+
+        .desc-truncated {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .show-more-btn {
+            color: var(--link-color);
+            cursor: pointer;
+            font-size: 0.95rem;
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+        .show-more-btn:hover { text-decoration: underline; }
+
+        .honor-meta {
+            margin-top: auto;
+            text-align: right;
+            font-size: 0.85rem;
+            color: var(--meta-color);
+        }
+
+        .meta-tag {
+            margin-left: 10px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+
+        .page-btn {
+            padding: 6px 12px;
+            border: 1px solid #ddd;
+            background: #fff;
+            color: var(--link-color);
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.9rem;
+            border-radius: 4px;
+        }
+
+        .page-btn:hover { background-color: #eee; }
+        
+        .page-btn.active {
+            background-color: var(--link-color);
+            color: #fff;
+            border-color: var(--link-color);
+        }
+
+        .page-btn:disabled {
+            color: #ccc;
+            cursor: not-allowed;
+        }
+
+        #loading { text-align: center; color: #666; padding: 20px; }
+
+        @media (max-width: 600px) {
+            .honor-item { flex-direction: column; }
+            .honor-img-box { width: 100%; height: auto; max-height: 250px; }
+            .honor-meta { text-align: left; margin-top: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loading">↻ 榮譽榜載入中...</div>
+    <ul id="honor-list" class="honor-list"></ul>
+    <div id="pagination" class="pagination"></div>
+
+<script>
+    // ★ 請換成您最新的 GAS 網址 ★
+    const DATA_URL = "https://script.google.com/macros/s/AKfycbwc90f8hJZpOQYTKV3ZAOnSGnQWzAE2RzKfIF3N616zlsEu3UwFLM5Fw7_A2cRW1j_C/exec"; 
+    
+    // ★ 修改處：這裡改成 3 ★
+    const ITEMS_PER_PAGE = 3; 
+
+    let allData = [];
+    let currentPage = 1;
+
+    const listContainer = document.getElementById('honor-list');
+    const loadingDiv = document.getElementById('loading');
+    const paginationDiv = document.getElementById('pagination');
+
+    fetch(DATA_URL)
+        .then(res => res.json())
+        .then(json => {
+            loadingDiv.style.display = 'none';
+            if (json.status !== "success" || !json.data || json.data.length === 0) {
+                listContainer.innerHTML = "<div style='text-align:center; padding:20px'>無資料</div>";
+                return;
+            }
+            allData = json.data;
+            renderPage(1);
+        })
+        .catch(err => {
+            console.error(err);
+            loadingDiv.innerHTML = "載入失敗";
+        });
+
+    function renderPage(page) {
+        currentPage = page;
+        listContainer.innerHTML = "";
+        
+        const start = (page - 1) * ITEMS_PER_PAGE;
+        const end = start + ITEMS_PER_PAGE;
+        const pageItems = allData.slice(start, end);
+
+        pageItems.forEach(item => {
+            const li = document.createElement('li');
+            li.className = 'honor-item';
+            
+            const d = item.date;
+            const dateStr = d ? `${d.substring(0,4)}-${d.substring(4,6)}-${d.substring(6,8)}` : '';
+            const docNo = item.doc_no ? `文號: ${item.doc_no}` : '';
+            const clicks = `點閱數: ${item.clicks}`;
+
+            let imgHtml = '';
+            if (item.images && item.images.length > 0) {
+                imgHtml = `
+                    <div class="honor-img-box">
+                        <a href="${item.images[0].url}" target="_blank">
+                            <img src="${item.images[0].url}" class="honor-thumb" alt="縮圖">
+                        </a>
+                    </div>`;
+            } else {
+                imgHtml = `
+                    <div class="honor-img-box" style="background:#f9f9f9; display:flex; align-items:center; justify-content:center; border:1px solid #ddd;">
+                        <span style="color:#ccc;">無照片</span>
+                    </div>`;
+            }
+
+            const contentId = `desc-${item.id}`;
+            const btnId = `btn-${item.id}`;
+            let descHtml = `<div id="${contentId}" class="honor-desc desc-truncated">${item.content}</div>`;
+            let moreBtnHtml = `<a href="javascript:void(0)" id="${btnId}" class="show-more-btn" onclick="toggleMore('${contentId}', '${btnId}')">顯示更多內容...</a>`;
+
+            li.innerHTML = `
+                ${imgHtml}
+                <div class="honor-content-box">
+                    <div class="honor-title">${item.title}</div>
+                    ${descHtml}
+                    ${moreBtnHtml}
+                    <div class="honor-meta">
+                        <span class="meta-tag">${docNo}</span>
+                        <span class="meta-tag">${item.dept}</span>
+                        <span class="meta-tag">${dateStr}</span>
+                        <span class="meta-tag">${clicks}</span>
+                    </div>
+                </div>
+            `;
+            listContainer.appendChild(li);
+        });
+
+        renderPagination();
+        window.scrollTo(0, 0);
+    }
+
+    function toggleMore(contentId, btnId) {
+        const content = document.getElementById(contentId);
+        const btn = document.getElementById(btnId);
+        if (content.classList.contains('desc-truncated')) {
+            content.classList.remove('desc-truncated');
+            btn.style.display = 'none';
+        }
+    }
+
+    function renderPagination() {
+        paginationDiv.innerHTML = "";
+        const totalPages = Math.ceil(allData.length / ITEMS_PER_PAGE);
+        
+        if (totalPages <= 1) return;
+
+        const prevBtn = document.createElement('button');
+        prevBtn.className = 'page-btn';
+        prevBtn.innerText = "<";
+        prevBtn.disabled = currentPage === 1;
+        prevBtn.onclick = () => renderPage(currentPage - 1);
+        paginationDiv.appendChild(prevBtn);
+
+        for (let i = 1; i <= totalPages; i++) {
+            const btn = document.createElement('button');
+            btn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+            btn.innerText = i;
+            btn.onclick = () => renderPage(i);
+            paginationDiv.appendChild(btn);
+        }
+
+        const nextBtn = document.createElement('button');
+        nextBtn.className = 'page-btn';
+        nextBtn.innerText = ">";
+        nextBtn.disabled = currentPage === totalPages;
+        nextBtn.onclick = () => renderPage(currentPage + 1);
+        paginationDiv.appendChild(nextBtn);
+    }
+</script>
+
+</body>
+</html>
