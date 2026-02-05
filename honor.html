@@ -20,8 +20,8 @@
             
             /* 彈窗專用顏色 */
             --modal-overlay: rgba(0, 0, 0, 0.7);
-            --badge-bg: #fff9c4; /* 淡黃色背景 */
-            --badge-text: #8d6e63; /* 褐色文字 */
+            --badge-bg: #fff9c4;
+            --badge-text: #8d6e63;
             
             /* 字體設定 */
             --main-font: "Iansui", "Microsoft JhengHei", "Heiti TC", sans-serif;
@@ -101,7 +101,6 @@
             line-height: 1.5;
         }
 
-        /* ★ 修改：標題改成按鈕樣式，讓它可以被點擊 */
         .title-btn {
             background: none;
             border: none;
@@ -188,19 +187,22 @@
 
         #loading { text-align: center; color: #666; padding: 20px; }
 
-        /* --- ★ 彈出視窗 (Modal) 樣式 ★ --- */
+        /* --- 彈出視窗 (Modal) 樣式 --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--modal-overlay); display: none;
             justify-content: center; align-items: center; z-index: 9999;
         }
         .modal-content {
-            background: #fff; width: 95%; max-width: 900px; max-height: 90vh;
+            background: #fff; 
+            width: 95%; 
+            /* ★ 修正 CS3140801C：將 max-width: 900px 改為 60rem (相對單位) */
+            max-width: 60rem; 
+            max-height: 90vh;
             overflow-y: auto; padding: 2rem; border-radius: 4px; position: relative;
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
         
-        /* Modal Header 佈局 */
         .modal-header {
             display: flex; justify-content: space-between; align-items: center;
             border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px;
@@ -209,7 +211,6 @@
         
         .header-left { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
         
-        /* 黃色標籤樣式 (模仿截圖) */
         .honor-badge {
             display: inline-flex; align-items: center; gap: 5px;
             background-color: var(--badge-bg); color: var(--badge-text);
@@ -226,15 +227,15 @@
         }
         .close-btn:hover { background-color: #f0f0f0; }
 
-        /* Modal Body */
         .modal-title-text {
             font-size: 1.5rem; font-weight: bold; margin-bottom: 20px; line-height: 1.4;
         }
         .modal-body-text {
             font-size: 1.1rem; line-height: 1.8; color: #333; white-space: pre-wrap; margin-bottom: 30px;
+            /* 針對內容寬度的額外優化，避免單行文字過長 */
+            max-width: 100%;
         }
 
-        /* 照片區塊 */
         .modal-photos-section { margin-top: 20px; }
         .photo-list { 
             list-style: none; padding: 0; margin: 15px 0 0 0; 
@@ -245,7 +246,6 @@
             max-height: 400px; object-fit: contain;
         }
 
-        /* RWD 設定 */
         @media (max-width: 768px) {
             .honor-item { flex-direction: column; }
             .honor-img-box { width: 100%; height: auto; max-height: 250px; margin-bottom: 10px; }
@@ -253,11 +253,10 @@
             .honor-meta { text-align: left; justify-content: flex-start; margin-top: 15px; padding-top: 10px; border-top: 1px dashed #eee; }
             .title-btn { font-size: 1.15rem; }
             
-            /* Modal RWD */
             .modal-content { padding: 1rem; }
             .modal-header { flex-direction: column; align-items: flex-start; }
             .header-left { width: 100%; flex-wrap: wrap; }
-            .close-btn { align-self: flex-end; margin-top: -40px; } /* 手機版把關閉按鈕往上拉 */
+            .close-btn { align-self: flex-end; margin-top: -40px; } 
         }
     </style>
 </head>
@@ -293,7 +292,7 @@
                 <button id="modal-close-btn" class="close-btn" title="關閉視窗">關閉</button>
             </div>
 
-            <h2 id="modal-title-text" class="modal-title-text"></h2>
+            <h2 id="modal-title-text" class="modal-title-text">公告詳細內容</h2>
             
             <div id="modal-body-text" class="modal-body-text"></div>
 
@@ -361,10 +360,8 @@
             const dateStr = d ? `${d.substring(0,4)}-${d.substring(4,6)}-${d.substring(6,8)}` : '';
             const docNo = item.doc_no ? `文號: ${item.doc_no}` : '';
             
-            // 列表圖片 (只顯示第一張縮圖)
             let imgHtml = '';
             if (item.images && item.images.length > 0) {
-                // 點擊縮圖也開啟 Modal (因為原版網站通常是這樣)
                 imgHtml = `
                     <div class="honor-img-box">
                         <button class="title-btn" onclick="openDetails(${start + index})" style="width:100%; height:100%; padding:0; border:none;" title="查看詳情：${item.title}">
@@ -382,10 +379,8 @@
             const btnId = `btn-${item.id}`;
             let descHtml = `<div id="${contentId}" class="honor-desc desc-truncated">${item.content}</div>`;
             
-            // 顯示更多按鈕 (展開列表內容，不開彈窗)
             let moreBtnHtml = `<button id="${btnId}" class="show-more-btn" onclick="toggleMore('${contentId}', '${btnId}')" aria-expanded="false" aria-controls="${contentId}" title="在列表中展開：${item.title}">顯示更多內容...</button>`;
 
-            // ★ 修改：標題改成 Button，點擊開啟 Modal
             li.innerHTML = `
                 ${imgHtml}
                 <div class="honor-content-box">
@@ -420,12 +415,10 @@
         }
     }
 
-    // ★ 開啟彈窗功能
     window.openDetails = function(index) {
         const item = allData[index];
         lastFocusedElement = document.activeElement;
         
-        // 填入資料
         modalTitleText.textContent = item.title;
         modalBodyText.textContent = item.content;
         
@@ -434,7 +427,6 @@
         modalDate.textContent = dateStr;
         modalDept.textContent = item.dept;
 
-        // 處理照片區塊
         if (item.images && item.images.length > 0) {
             modalPhotos.style.display = 'block';
             photoList.innerHTML = item.images.map(img => `
@@ -446,10 +438,9 @@
             modalPhotos.style.display = 'none';
         }
 
-        // 顯示 Modal
         modal.style.display = 'flex';
-        closeBtn.focus(); // 焦點移到關閉按鈕
-        document.body.style.overflow = 'hidden'; // 禁止背景捲動
+        closeBtn.focus(); 
+        document.body.style.overflow = 'hidden'; 
     };
 
     function closeModal() {
@@ -462,7 +453,6 @@
     modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal.style.display === 'flex') closeModal(); });
 
-    // 分頁邏輯 (同公告)
     function renderPagination() {
         paginationDiv.innerHTML = "";
         const totalPages = Math.ceil(allData.length / ITEMS_PER_PAGE);
