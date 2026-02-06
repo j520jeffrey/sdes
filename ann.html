@@ -120,8 +120,28 @@
         .tag-cat-secondary { background-color: var(--tag-bg-2); color: #fff; }
         .tag-dept { background-color: var(--tag-bg-dept); color: #333; }
 
+        /* 須登入系統按鈕樣式 */
+        .login-badge {
+            background-color: #ccc; 
+            color: #fff;
+            padding: 1px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            margin-left: 8px;
+            text-decoration: none;
+            display: inline-block;
+            vertical-align: middle;
+            transition: background-color 0.2s;
+            cursor: pointer;
+            border: 1px solid #bbb;
+        }
+        .login-badge:hover {
+            background-color: #999;
+        }
+
         .list-title { flex-grow: 1; min-width: 0; }
         
+        /* 標題樣式 (同時適用於 button 和 a) */
         .title-btn {
             background: none; border: none; padding: 0; font-size: 1.1rem;
             color: var(--link-color); text-decoration: none; cursor: pointer;
@@ -133,7 +153,6 @@
         .title-btn:focus { outline: var(--focus-outline); background-color: #000; color: #ffcc00; }
 
         /* --- 分頁與Modal --- */
-        /* ★ 修改：統一分頁樣式，與榮譽榜一致 */
         .pagination {
             display: flex; justify-content: center; align-items: center;
             gap: 5px; margin-top: 1.5rem; margin-bottom: 1rem;
@@ -148,7 +167,7 @@
             text-decoration: none;
             font-size: 1rem;
             border-radius: 4px;
-            min-width: 35px; /* 統一按鈕寬度 */
+            min-width: 35px;
             font-family: inherit;
         }
         .page-btn:hover { background-color: #eee; }
@@ -184,6 +203,7 @@
             .modal-content { width: 95%; padding: 1rem; }
             .filter-section { gap: 0.3rem; }
             .filter-btn { font-size: 0.9rem; padding: 0.2rem 0.5rem; }
+            .login-badge { margin-left: 0; margin-top: 5px; display: inline-block; }
         }
     </style>
 </head>
@@ -221,8 +241,9 @@
 </div>
 
 <script>
-    const DATA_URL = "https://script.google.com/macros/s/AKfycbxeoMbP6WVHLsG_hRULG_iuXlXiIIx0abYG0v0wh7ahqnKXn4qsqJe7sbz2Rnom5RKZ/exec";
-    const ITEMS_PER_PAGE = 15; // 每頁筆數
+    // ★ 請確認您的 公告 GAS 網址 ★
+    const DATA_URL = "https://script.google.com/macros/s/AKfycbz8e60TRKeU-YoFGA4WyfGGyJ98cq9KgzG2MnrLctC3ho10F2rdxybH5kJs7UUKTqGm/exec";
+    const ITEMS_PER_PAGE = 15; 
     const NEW_DAYS_LIMIT = 7; 
 
     // SVG 保持 role="img" 和 title
@@ -244,7 +265,6 @@
 
     const listContainer = document.getElementById('announcement-list');
     const loadingDiv = document.getElementById('loading');
-    // ★ 修改：指向新的分頁容器
     const paginationDiv = document.getElementById('pagination');
     
     const filterSection = document.querySelector('.filter-section');
@@ -283,7 +303,6 @@
             allData = json.data;
             filteredData = allData; 
             initFilters();
-            // initPagination 不需要了，改用動態渲染
             renderPage(1);
         })
         .catch(err => {
@@ -342,7 +361,6 @@
         listContainer.innerHTML = "";
         if (filteredData.length === 0) {
             listContainer.innerHTML = "<li style='padding:20px; text-align:center; color:#666;'>此分類沒有公告。</li>";
-            // 清空分頁
             paginationDiv.innerHTML = "";
             return;
         }
@@ -378,25 +396,44 @@
                 newHtml = SVG_NEW;
             }
 
+            // ★ 修正：標題與按鈕邏輯
+            let titleActionHtml = "";
+            let loginBadgeHtml = "";
+
+            if (item.pub_view == "2") {
+                // 狀況一：需登入
+                // 標題本身變成連結到 ESA 網站，不開啟 Modal
+                titleActionHtml = `
+                    <a href="https://esa.ntpc.edu.tw" target="_blank" class="title-btn" title="需登入系統觀看：${item.title}">
+                        ${topHtml}${item.title}${newHtml}
+                    </a>`;
+                // 顯示須登入按鈕
+                loginBadgeHtml = `<a href="https://esa.ntpc.edu.tw" target="_blank" class="login-badge" title="需登入系統觀看">須登入系統</a>`;
+            } else {
+                // 狀況二：公開
+                // 標題是按鈕，開啟 Modal
+                titleActionHtml = `
+                    <button class="title-btn" onclick="openDetails(${start + index})" title="查看公告：${item.title}">
+                        ${topHtml}${item.title}${newHtml}
+                    </button>`;
+            }
+
             li.innerHTML = `
                 <div class="list-date" title="發布日期：${simpleDate}"><span class="sr-only">發布日期：</span>${simpleDate}</div>
                 <div class="list-tags">
                     ${tagsHtml}
                 </div>
                 <div class="list-title">
-                    <button class="title-btn" onclick="openDetails(${start + index})" title="查看公告：${item.title}">
-                        ${topHtml}${item.title}${newHtml}
-                    </button>
+                    ${titleActionHtml}
+                    ${loginBadgeHtml}
                 </div>
             `;
             listContainer.appendChild(li);
         });
 
-        // 渲染分頁
         renderPagination();
     }
 
-    // ★ 修改：使用與榮譽榜相同的分頁邏輯 (支援分組)
     function renderPagination() {
         paginationDiv.innerHTML = "";
         const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
@@ -408,7 +445,6 @@
         const startPage = (currentGroup - 1) * pagesPerGroup + 1;
         const endPage = Math.min(startPage + pagesPerGroup - 1, totalPages);
 
-        // --- << 上10頁 ---
         if (startPage > 1) {
              const prevGroupBtn = document.createElement('button');
              prevGroupBtn.className = 'page-btn';
@@ -419,7 +455,6 @@
              paginationDiv.appendChild(prevGroupBtn);
         }
 
-        // --- < 上一頁 ---
         const prevBtn = document.createElement('button');
         prevBtn.className = 'page-btn';
         prevBtn.innerText = "<";
@@ -429,7 +464,6 @@
         prevBtn.onclick = () => renderPage(currentPage - 1);
         paginationDiv.appendChild(prevBtn);
 
-        // --- 數字頁碼 ---
         for (let i = startPage; i <= endPage; i++) {
             const btn = document.createElement('button');
             btn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
@@ -441,7 +475,6 @@
             paginationDiv.appendChild(btn);
         }
 
-        // --- > 下一頁 ---
         const nextBtn = document.createElement('button');
         nextBtn.className = 'page-btn';
         nextBtn.innerText = ">";
@@ -451,7 +484,6 @@
         nextBtn.onclick = () => renderPage(currentPage + 1);
         paginationDiv.appendChild(nextBtn);
 
-        // --- >> 下10頁 ---
         if (endPage < totalPages) {
              const nextGroupBtn = document.createElement('button');
              nextGroupBtn.className = 'page-btn';
@@ -500,5 +532,4 @@
 </script>
 
 </body>
-
 </html>
