@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>學校公告</title>
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Iansui&display=swap" rel="stylesheet">
@@ -17,72 +18,153 @@
             --modal-overlay: rgba(0, 0, 0, 0.7);
             --btn-active-bg: #0044cc;
             --btn-active-text: #ffffff;
-            --tag-bg-1: #0066cc; --tag-bg-2: #2e7d32; --tag-bg-dept: #f0f0f0; 
+            --tag-bg-1: #0066cc; 
+            --tag-bg-2: #2e7d32; 
+            --tag-bg-dept: #f0f0f0; 
             --main-font: "Iansui", "Microsoft JhengHei", "Heiti TC", sans-serif;
         }
-        *, *::before, *::after { box-sizing: border-box; }
-        body {
-            font-family: var(--main-font); background-color: var(--bg-color);
-            color: var(--text-color); line-height: 1.5; margin: 0; padding: 0;
-            font-size: 1rem; width: 100%; overflow-x: hidden;
+
+        /* 全域設定 */
+        *, *::before, *::after {
+            box-sizing: border-box;
         }
-        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
-        .container { width: 100%; max-width: 100vw; margin: 0; padding: 0 5px; }
-        
-        /* SVG 圖示 */
+
+        body {
+            font-family: var(--main-font);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.5;
+            margin: 0;
+            padding: 0;
+            font-size: 1rem;
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        .sr-only {
+            position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+            overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+        }
+
+        .container {
+            width: 100%; 
+            max-width: 100vw; 
+            margin: 0; 
+            padding: 0 5px; 
+        }
+
+        /* --- SVG 圖示 --- */
         .icon-svg { display: inline-block; vertical-align: text-bottom; }
         .icon-top { color: #d32f2f; margin-right: 4px; width: 18px; height: 18px; }
         .icon-new { margin-left: 6px; height: 18px; vertical-align: middle; }
 
-        /* 分類篩選 */
-        .filter-section { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.8rem; padding-bottom: 0.8rem; border-bottom: 1px solid #ddd; }
+        /* --- 分類篩選 --- */
+        .filter-section {
+            display: flex; flex-wrap: wrap; gap: 0.4rem;
+            margin-bottom: 0.8rem; padding-bottom: 0.8rem; border-bottom: 1px solid #ddd;
+        }
         .filter-btn {
             background-color: #fff; border: 1px solid #0044cc; color: #0044cc;
             padding: 0.2rem 0.6rem; font-size: 0.95rem; border-radius: 2rem;
-            cursor: pointer; transition: all 0.2s; font-family: inherit;
+            cursor: pointer; transition: all 0.2s;
+            font-family: inherit;
         }
         .filter-btn:hover { background-color: #e6f0ff; }
         .filter-btn.active { background-color: var(--btn-active-bg); color: var(--btn-active-text); }
         .filter-btn:focus { outline: var(--focus-outline); }
-        .count-badge { background-color: #eee; color: #333; font-size: 0.85em; padding: 1px 5px; border-radius: 10px; margin-left: 4px; }
+        .count-badge {
+            background-color: #eee; color: #333; font-size: 0.85em;
+            padding: 1px 5px; border-radius: 10px; margin-left: 4px;
+        }
         .filter-btn.active .count-badge { background-color: rgba(255,255,255,0.3); color: #fff; }
 
-        /* 列表樣式 */
+        /* --- 列表樣式 --- */
         .announcement-list { list-style: none; padding: 0; margin: 0; }
-        .list-item { border-bottom: 1px solid #eee; padding: 0.6rem 0.4rem; display: flex; align-items: center; gap: 0.8rem; }
+        .list-item {
+            border-bottom: 1px solid #eee; padding: 0.6rem 0.4rem;
+            display: flex; align-items: center; gap: 0.8rem;
+        }
         .list-item:hover { background-color: rgba(0,0,0,0.03); }
-        .list-date { font-family: var(--main-font); font-size: 1rem; color: #555; flex-shrink: 0; width: 11ch; }
-        .list-tags { display: flex; gap: 4px; flex-wrap: wrap; min-width: 80px; max-width: 25%; }
-        .tag-badge { padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.9rem; white-space: nowrap; display: inline-block; cursor: default; }
+        
+        .list-date { 
+            font-family: var(--main-font);
+            font-size: 1rem; color: #555; flex-shrink: 0; width: 11ch; 
+        }
+        
+        .list-tags {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+            min-width: 80px; 
+            max-width: 25%; 
+        }
+
+        .tag-badge {
+            padding: 0.2rem 0.5rem; 
+            border-radius: 4px;
+            font-size: 0.9rem; 
+            white-space: nowrap;
+            display: inline-block;
+            cursor: default;
+        }
+        
         .tag-cat-primary { background-color: var(--tag-bg-1); color: #fff; }
         .tag-cat-secondary { background-color: var(--tag-bg-2); color: #fff; }
         .tag-dept { background-color: var(--tag-bg-dept); color: #333; }
 
+        /* 須登入系統按鈕樣式 */
         .login-badge {
-            background-color: #ccc; color: #fff; padding: 1px 8px;
-            border-radius: 4px; font-size: 0.9rem; margin-left: 8px;
-            text-decoration: none; display: inline-block; vertical-align: middle;
-            transition: background-color 0.2s; cursor: pointer; border: 1px solid #bbb;
+            background-color: #ccc; 
+            color: #fff;
+            padding: 1px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            margin-left: 8px;
+            text-decoration: none;
+            display: inline-block;
+            vertical-align: middle;
+            transition: background-color 0.2s;
+            cursor: pointer;
+            border: 1px solid #bbb;
         }
-        .login-badge:hover { background-color: #999; }
+        .login-badge:hover {
+            background-color: #999;
+        }
 
         .list-title { flex-grow: 1; min-width: 0; }
+        
         .title-btn {
             background: none; border: none; padding: 0; font-size: 1.1rem;
             color: var(--link-color); text-decoration: none; cursor: pointer;
             text-align: left; font-weight: normal; font-family: inherit;
-            line-height: 1.5; display: inline-block; word-wrap: break-word; 
+            line-height: 1.5; display: inline-block;
+            word-wrap: break-word; 
         }
         .title-btn:hover { color: #002266; text-decoration: underline; }
         .title-btn:focus { outline: var(--focus-outline); background-color: #000; color: #ffcc00; }
 
-        .pagination { display: flex; justify-content: center; align-items: center; gap: 5px; margin-top: 1.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
-        .page-btn { padding: 8px 12px; border: 1px solid #ddd; background: #fff; color: var(--link-color); cursor: pointer; text-decoration: none; font-size: 1rem; border-radius: 4px; min-width: 35px; font-family: inherit; }
+        /* --- 分頁與Modal --- */
+        .pagination {
+            display: flex; justify-content: center; align-items: center;
+            gap: 5px; margin-top: 1.5rem; margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        .page-btn {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            background: #fff;
+            color: var(--link-color);
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 1rem;
+            border-radius: 4px;
+            min-width: 35px;
+            font-family: inherit;
+        }
         .page-btn:hover { background-color: #eee; }
         .page-btn.active { background-color: var(--link-color); color: #fff; border-color: var(--link-color); }
         .page-btn:disabled { color: #ccc; cursor: not-allowed; }
 
-        /* Modal */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--modal-overlay); display: none;
@@ -90,23 +172,30 @@
         }
         .modal-content {
             background: #fff; width: 90%; max-width: 70ch; max-height: 90vh;
-            overflow-y: auto; padding: 2rem; border: 2px solid #000;
-            border-radius: 0.5rem; position: relative; /* 為了定位關閉按鈕 */
+            overflow-y: auto; padding: 1.5rem; border: 2px solid #000;
+            border-radius: 0.5rem; position: relative;
         }
+        .modal-body { white-space: pre-wrap; line-height: 1.8; font-size: 1.05rem; }
+        .modal-body * { color: #000 !important; background: transparent !important; font-size: inherit !important; font-family: inherit !important; }
         
-        /* ★ 修改：簡潔的 X 關閉按鈕 */
+        /* ★ 修改：移除 line-height: 32px (絕對單位)，改用 Flexbox 置中 ★ */
         .close-btn {
             position: absolute; top: 15px; right: 15px;
             background: #d32f2f; color: #fff; border: none;
             width: 32px; height: 32px; border-radius: 4px;
-            font-size: 1.5rem; line-height: 32px; padding: 0;
+            font-size: 1.5rem; 
+            padding: 0;
             text-align: center; cursor: pointer; font-family: Arial, sans-serif;
             transition: background 0.2s;
+            
+            /* 新增：Flexbox 置中，並設定無單位行高 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1; 
         }
         .close-btn:hover { background: #b71c1c; }
 
-        .modal-body { white-space: pre-wrap; line-height: 1.8; font-size: 1.05rem; }
-        .modal-body * { color: #000 !important; background: transparent !important; font-size: inherit !important; font-family: inherit !important; }
         .attachments-area { background: #f4f4f4; padding: 1rem; border: 1px dashed #666; margin-top: 1rem; }
         .attachments-area a { color: var(--link-color); font-weight: bold; display: inline-block; padding: 0.3rem; }
         #loading { font-size: 1rem; color: #666; padding: 1rem; text-align: center; }
@@ -126,10 +215,13 @@
 
 <div class="container">
     <div id="loading" role="status">↻ 公告載入中...</div>
+    
     <nav class="filter-section" aria-label="公告分類篩選">
         <button class="filter-btn active" data-cat="all" title="顯示全部公告">全部公告</button>
     </nav>
+    
     <ul id="announcement-list" class="announcement-list" aria-live="polite"></ul>
+    
     <nav aria-label="分頁導航">
         <div id="pagination" class="pagination"></div>
     </nav>
@@ -159,7 +251,7 @@
     const ITEMS_PER_PAGE = 15; 
     const NEW_DAYS_LIMIT = 7; 
 
-    // SVG 圖示
+    // SVG 保持 role="img" 和 title
     const SVG_TOP = `<svg role="img" aria-label="置頂" class="icon-svg icon-top" viewBox="0 0 24 24" fill="currentColor"><title>置頂</title><path d="M16 9V4l1 0c0.55 0 1-0.45 1-1s-0.45-1-1-1H7C6.45 2 6 2.45 6 3s0.45 1 1 1l1 0v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"></path></svg>`;
     const SVG_NEW = `<svg role="img" aria-label="最新" class="icon-svg icon-new" viewBox="0 0 34 16"><title>最新</title><rect width="34" height="16" rx="3" fill="#d32f2f"/><text x="17" y="12" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-weight="bold" font-size="10">NEW</text></svg>`;
 
@@ -320,19 +412,17 @@
                 newHtml = SVG_NEW;
             }
 
-            // 標題與按鈕邏輯 (修復權限問題)
+            // 標題與按鈕邏輯
             let titleActionHtml = "";
             let loginBadgeHtml = "";
 
             if (item.pub_view == "2") {
-                // 狀況一：需登入 -> 連結到官網，不給開彈窗
                 titleActionHtml = `
                     <a href="https://esa.ntpc.edu.tw" target="_blank" class="title-btn" title="需登入系統觀看：${item.title}">
                         ${topHtml}${item.title}${newHtml}
                     </a>`;
                 loginBadgeHtml = `<a href="https://esa.ntpc.edu.tw" target="_blank" class="login-badge" title="需登入系統觀看">須登入系統</a>`;
             } else {
-                // 狀況二：公開 -> 開啟彈窗
                 titleActionHtml = `
                     <button class="title-btn" onclick="openDetails(${start + index})" title="查看公告：${item.title}">
                         ${topHtml}${item.title}${newHtml}
