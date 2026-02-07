@@ -24,7 +24,6 @@
             --main-font: "Iansui", "Microsoft JhengHei", "Heiti TC", sans-serif;
         }
 
-        /* 全域設定 */
         *, *::before, *::after {
             box-sizing: border-box;
         }
@@ -112,7 +111,6 @@
         .tag-cat-secondary { background-color: var(--tag-bg-2); color: #fff; }
         .tag-dept { background-color: var(--tag-bg-dept); color: #333; }
 
-        /* 須登入系統按鈕樣式 */
         .login-badge {
             background-color: #ccc; 
             color: #fff;
@@ -143,7 +141,6 @@
         .title-btn:hover { color: #002266; text-decoration: underline; }
         .title-btn:focus { outline: var(--focus-outline); background-color: #000; color: #ffcc00; }
 
-        /* --- 分頁與Modal --- */
         .pagination {
             display: flex; justify-content: center; align-items: center;
             gap: 5px; margin-top: 1.5rem; margin-bottom: 1rem;
@@ -178,7 +175,6 @@
         .modal-body { white-space: pre-wrap; line-height: 1.8; font-size: 1.05rem; }
         .modal-body * { color: #000 !important; background: transparent !important; font-size: inherit !important; font-family: inherit !important; }
         
-        /* ★ 修改：移除 line-height: 32px (絕對單位)，改用 Flexbox 置中 ★ */
         .close-btn {
             position: absolute; top: 15px; right: 15px;
             background: #d32f2f; color: #fff; border: none;
@@ -187,12 +183,7 @@
             padding: 0;
             text-align: center; cursor: pointer; font-family: Arial, sans-serif;
             transition: background 0.2s;
-            
-            /* 新增：Flexbox 置中，並設定無單位行高 */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            line-height: 1; 
+            display: flex; align-items: center; justify-content: center; line-height: 1; 
         }
         .close-btn:hover { background: #b71c1c; }
 
@@ -215,13 +206,10 @@
 
 <div class="container">
     <div id="loading" role="status">↻ 公告載入中...</div>
-    
     <nav class="filter-section" aria-label="公告分類篩選">
         <button class="filter-btn active" data-cat="all" title="顯示全部公告">全部公告</button>
     </nav>
-    
     <ul id="announcement-list" class="announcement-list" aria-live="polite"></ul>
-    
     <nav aria-label="分頁導航">
         <div id="pagination" class="pagination"></div>
     </nav>
@@ -230,7 +218,6 @@
 <div id="detail-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
     <div class="modal-content">
         <button id="modal-close-btn" class="close-btn" aria-label="關閉視窗" title="關閉">&times;</button>
-        
         <div style="border-bottom: 2px solid #eee; margin-bottom: 1rem; padding-bottom: 0.5rem; padding-right: 30px;">
             <h2 id="modal-title" style="margin:0 0 10px 0; font-weight:normal;">公告詳細內容</h2>
             <div style="color:#555; font-size: 0.95rem;">
@@ -246,12 +233,12 @@
 </div>
 
 <script>
-    // ★ 請確認您的 公告 GAS 網址 ★
-    const DATA_URL = "https://script.google.com/macros/s/AKfycbz8e60TRKeU-YoFGA4WyfGGyJ98cq9KgzG2MnrLctC3ho10F2rdxybH5kJs7UUKTqGm/exec";
+    // ★ 請確認您的 公告 GAS 網址 (需包含 job_title 欄位) ★
+    const DATA_URL = "https://script.google.com/macros/s/AKfycbyq30rkl3vobOvaG8pgeHrjp4j-sDfP0pXt-_Hox3aFrU4EMfAk5yXYgvFE2Kl_uCgB/exec";
     const ITEMS_PER_PAGE = 15; 
     const NEW_DAYS_LIMIT = 7; 
 
-    // SVG 保持 role="img" 和 title
+    // SVG 圖示
     const SVG_TOP = `<svg role="img" aria-label="置頂" class="icon-svg icon-top" viewBox="0 0 24 24" fill="currentColor"><title>置頂</title><path d="M16 9V4l1 0c0.55 0 1-0.45 1-1s-0.45-1-1-1H7C6.45 2 6 2.45 6 3s0.45 1 1 1l1 0v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"></path></svg>`;
     const SVG_NEW = `<svg role="img" aria-label="最新" class="icon-svg icon-new" viewBox="0 0 34 16"><title>最新</title><rect width="34" height="16" rx="3" fill="#d32f2f"/><text x="17" y="12" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-weight="bold" font-size="10">NEW</text></svg>`;
 
@@ -262,7 +249,6 @@
         "168": "安全棒球", "7": "研習公告"
     };
 
-    // 強制自訂排序
     const CATEGORY_ORDER = [
         "2", "35", "36", "30", "31", "38", "28", "37", 
         "48", "39", "29", "156", "168", "7"
@@ -277,7 +263,6 @@
     const listContainer = document.getElementById('announcement-list');
     const loadingDiv = document.getElementById('loading');
     const paginationDiv = document.getElementById('pagination');
-    
     const filterSection = document.querySelector('.filter-section');
     const modal = document.getElementById('detail-modal');
     const modalTitle = document.getElementById('modal-title');
@@ -331,7 +316,6 @@
             }
         });
 
-        // 依照 CATEGORY_ORDER 的順序來產生按鈕
         CATEGORY_ORDER.forEach(catId => {
             if (CATEGORY_MAP[catId]) {
                 const name = CATEGORY_MAP[catId];
@@ -412,7 +396,6 @@
                 newHtml = SVG_NEW;
             }
 
-            // 標題與按鈕邏輯
             let titleActionHtml = "";
             let loginBadgeHtml = "";
 
@@ -506,6 +489,7 @@
         }
     }
 
+    // ★ 修改：顯示職稱邏輯
     window.openDetails = function(index) {
         const item = filteredData[index];
         lastFocusedElement = document.activeElement;
@@ -514,7 +498,11 @@
         modalTitle.setAttribute('title', `公告標題：${item.title}`);
         
         modalDate.innerHTML = `<span class="sr-only">發布日期：</span>${item.date}`;
-        modalDept.innerHTML = `<span class="sr-only">發布單位：</span>${item.department}`;
+        
+        // ★ 如果有職稱，則顯示「處室 / 職稱」，否則只顯示處室
+        const fullDept = item.job_title ? `${item.department} / ${item.job_title}` : item.department;
+        modalDept.innerHTML = `<span class="sr-only">發布單位：</span>${fullDept}`;
+        
         modalBody.innerHTML = item.content_html;
         
         if (item.attachments && item.attachments.length > 0) {
