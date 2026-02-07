@@ -257,6 +257,12 @@
         "168": "安全棒球", "7": "研習公告"
     };
 
+    // ★ 新增：強制自訂排序 (依照您提供的順序)
+    const CATEGORY_ORDER = [
+        "2", "35", "36", "30", "31", "38", "28", "37", 
+        "48", "39", "29", "156", "168", "7"
+    ];
+
     let allData = [];
     let filteredData = []; 
     let currentPage = 1;
@@ -319,21 +325,27 @@
                 });
             }
         });
-        Object.keys(CATEGORY_MAP).forEach(catId => {
-            const name = CATEGORY_MAP[catId];
-            const count = counts[catId] || 0;
-            const btn = document.createElement('button');
-            btn.className = 'filter-btn';
-            btn.dataset.cat = catId;
-            btn.title = `篩選分類：${name}`;
-            btn.innerHTML = `${name} <span class="count-badge">${count}</span>`;
-            btn.addEventListener('click', () => {
-                applyFilter(catId);
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-            });
-            filterSection.appendChild(btn);
+
+        // ★ 修改：依照 CATEGORY_ORDER 的順序來產生按鈕
+        CATEGORY_ORDER.forEach(catId => {
+            // 只有當該分類有資料，或是在 MAP 中有定義時才顯示 (可視需求調整)
+            if (CATEGORY_MAP[catId]) {
+                const name = CATEGORY_MAP[catId];
+                const count = counts[catId] || 0;
+                const btn = document.createElement('button');
+                btn.className = 'filter-btn';
+                btn.dataset.cat = catId;
+                btn.title = `篩選分類：${name}`;
+                btn.innerHTML = `${name} <span class="count-badge">${count}</span>`;
+                btn.addEventListener('click', () => {
+                    applyFilter(catId);
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                });
+                filterSection.appendChild(btn);
+            }
         });
+
         const allBtn = document.querySelector('[data-cat="all"]');
         allBtn.innerHTML = `全部公告 <span class="count-badge">${allData.length}</span>`;
         allBtn.addEventListener('click', () => {
@@ -396,22 +408,20 @@
                 newHtml = SVG_NEW;
             }
 
-            // ★ 修正：標題與按鈕邏輯
+            // 標題與按鈕邏輯
             let titleActionHtml = "";
             let loginBadgeHtml = "";
 
             if (item.pub_view == "2") {
                 // 狀況一：需登入
-                // 標題本身變成連結到 ESA 網站，不開啟 Modal
+                // 標題變成連結
                 titleActionHtml = `
                     <a href="https://esa.ntpc.edu.tw" target="_blank" class="title-btn" title="需登入系統觀看：${item.title}">
                         ${topHtml}${item.title}${newHtml}
                     </a>`;
-                // 顯示須登入按鈕
                 loginBadgeHtml = `<a href="https://esa.ntpc.edu.tw" target="_blank" class="login-badge" title="需登入系統觀看">須登入系統</a>`;
             } else {
                 // 狀況二：公開
-                // 標題是按鈕，開啟 Modal
                 titleActionHtml = `
                     <button class="title-btn" onclick="openDetails(${start + index})" title="查看公告：${item.title}">
                         ${topHtml}${item.title}${newHtml}
